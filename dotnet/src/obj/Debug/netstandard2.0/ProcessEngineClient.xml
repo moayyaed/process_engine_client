@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ProcessEngineClient</name>
+    </assembly>
+    <members>
+        <member name="T:ProcessEngineClient.Identity">
+            <summary>
+            The identity
+            </summary>
+        </member>
+        <member name="F:ProcessEngineClient.Identity.DefaultIdentity">
+            <summary>
+            Identity for using with the local process-engine.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ProcessEngineClient.Identity.#ctor(System.String)">
+            <summary>
+            Create the Identity for the given token
+            </summary>
+            <param name="token">The token to use with the identity.</param>
+        </member>
+        <member name="T:ProcessEngineClient.ProcessEngineClient">
+            <summary>
+            Client for interact with the process-engine
+            </summary>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.#ctor(System.String)">
+            <summary>
+            Create a new instance for the given url.
+            </summary>
+            <param name="url">The url for accessing the process-engine client api.</param>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.#ctor(System.String,ProcessEngineClient.Identity)">
+            <summary>
+            Create a new instance for the given url.
+            </summary>
+            <param name="url">The url for accessing the process-engine client api.</param>
+            <param name="identity">The identity to connect the process-engine with.</param>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.StartProcessInstance(System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="processModelId"></param>
+            <param name="startEventId"></param>
+            <param name="endEventId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.StartProcessInstance``1(System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="processModelId"></param>
+            <param name="startEventId"></param>
+            <param name="endEventId"></param>
+            <typeparam name="TResponsePayload"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.StartProcessInstance``2(System.String,System.String,ProcessEngineClient.ProcessStartRequest{``0},System.String)">
+            <summary>
+            
+            </summary>
+            <param name="processModelId"></param>
+            <param name="startEventId"></param>
+            <param name="request"></param>
+            <param name="endEventId"></param>
+            <typeparam name="TRequestPayload"></typeparam>
+            <typeparam name="TResponsePayload"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.SubscribeToExternalTasksWithTopic``1(System.String,System.Int32,System.Int32,ProcessEngine.ExternalTaskAPI.Contracts.HandleExternalTaskAction{``0})">
+            <summary>
+            
+            </summary>
+            <param name="topic"></param>
+            <param name="maxTasks"></param>
+            <param name="timeout"></param>
+            <param name="handleAction"></param>
+            <typeparam name="TPayload"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessEngineClient.SubscribeToExternalTasksWithTopic``1(System.String,ProcessEngine.ExternalTaskAPI.Contracts.HandleExternalTaskAction{``0})">
+            <summary>
+            
+            </summary>
+            <param name="topic"></param>
+            <param name="handleAction"></param>
+            <typeparam name="TPayload"></typeparam>
+            <returns></returns>
+        </member>
+        <member name="T:ProcessEngineClient.ProcessStartRequest`1">
+            <summary>
+            The request to start a process-instance.
+            </summary>
+            <typeparam name="TPayload">The type to use for the create request.</typeparam>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartRequest`1.CorrelationId">
+            <summary>
+            The correlation id.
+            </summary>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartRequest`1.ParentProcessInstanceId">
+            <summary>
+            The id of the parent processinstance
+            </summary>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartRequest`1.Payload">
+            <summary>
+            The payload to use to create a new process-instance.
+            </summary>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessStartRequest`1.#ctor">
+            <summary>
+            Create a new request to start a process-instance.
+            </summary>
+        </member>
+        <member name="T:ProcessEngineClient.ProcessStartResponse`1">
+            <summary>
+            The response for the processinstance start.
+            </summary>
+            <typeparam name="TResponsePayload">The type for the payload.</typeparam>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartResponse`1.ProcessInstanceId">
+            <summary>
+            
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartResponse`1.CorrelationId">
+            <summary>
+            The correlation.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartResponse`1.EndEventId">
+            <summary>
+            The endevent.
+            </summary>
+            <value></value>
+        </member>
+        <member name="P:ProcessEngineClient.ProcessStartResponse`1.Payload">
+            <summary>
+            The payload for the response.
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:ProcessEngineClient.ProcessStartResponse`1.#ctor">
+            <summary>
+            Create the Request.
+            </summary>
+        </member>
+    </members>
+</doc>
