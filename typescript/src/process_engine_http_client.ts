@@ -44,7 +44,7 @@ export class ProcessEngineHttpClient {
     userId: 'dummy_token',
   }
 
-  private socketForIdentity: SocketIOClient.Socket;
+  private socketIoClientForIdentity: SocketIOClient.Socket;
   private subscriptionCollection: SubscriptionCallbackAssociation = {};
 
   private httpClient: HttpClient;
@@ -62,225 +62,8 @@ export class ProcessEngineHttpClient {
     this.createSocketForIdentity();
   }
 
-  public disconnectSocket(): void {
-    this.removeSocketForIdentity();
-  }
-
-  // Notifications
-  public async onActivityReached(
-    callback: Messages.CallbackTypes.OnActivityReachedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.activityReached, callback, subscribeOnce);
-  }
-
-  public async onActivityFinished(
-    callback: Messages.CallbackTypes.OnActivityFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.activityFinished, callback, subscribeOnce);
-  }
-  // ------------ For backwards compatibility only
-
-  public async onCallActivityWaiting(
-    callback: Messages.CallbackTypes.OnCallActivityWaitingCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.callActivityWaiting, callback, subscribeOnce);
-  }
-
-  public async onCallActivityFinished(
-    callback: Messages.CallbackTypes.OnCallActivityFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.callActivityFinished, callback, subscribeOnce);
-  }
-
-  // ------------
-
-  public async onEmptyActivityWaiting(
-    callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityWaiting, callback, subscribeOnce);
-  }
-
-  public async onEmptyActivityFinished(
-    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityFinished, callback, subscribeOnce);
-  }
-
-  public async onEmptyActivityForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.emptyActivityForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onEmptyActivityForIdentityFinished(
-    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.emptyActivityForIdentityFinished
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onUserTaskWaiting(
-    callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.userTaskWaiting, callback, subscribeOnce);
-  }
-
-  public async onUserTaskFinished(
-    callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.userTaskFinished, callback, subscribeOnce);
-  }
-
-  public async onBoundaryEventTriggered(
-    callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.boundaryEventTriggered, callback, subscribeOnce);
-  }
-
-  public async onIntermediateThrowEventTriggered(
-    callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.intermediateThrowEventTriggered, callback, subscribeOnce);
-  }
-
-  public async onIntermediateCatchEventReached(
-    callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventReached, callback, subscribeOnce);
-  }
-
-  public async onIntermediateCatchEventFinished(
-    callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<any> {
-    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventFinished, callback, subscribeOnce);
-  }
-
-  public async onUserTaskForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.userTaskForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onUserTaskForIdentityFinished(
-    callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.userTaskForIdentityFinished
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onProcessTerminated(
-    callback: Messages.CallbackTypes.OnProcessTerminatedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.processTerminated, callback, subscribeOnce);
-  }
-
-  public async onProcessError(
-    callback: Messages.CallbackTypes.OnProcessErrorCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.processError, callback, subscribeOnce);
-  }
-
-  public async onProcessStarted(
-    callback: Messages.CallbackTypes.OnProcessStartedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.processStarted, callback, subscribeOnce);
-  }
-
-  public async onProcessWithProcessModelIdStarted(
-    callback: Messages.CallbackTypes.OnProcessStartedCallback,
-    processModelId: string,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const eventName = socketSettings.paths.processInstanceStarted
-      .replace(socketSettings.pathParams.processModelId, processModelId);
-
-    return this.createSocketIoSubscription(eventName, callback, subscribeOnce);
-  }
-
-  public async onManualTaskWaiting(
-    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.manualTaskWaiting, callback, subscribeOnce);
-  }
-
-  public async onManualTaskFinished(
-    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.manualTaskFinished, callback, subscribeOnce);
-  }
-
-  public async onManualTaskForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.manualTaskForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onManualTaskForIdentityFinished(
-    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    const socketEventName = socketSettings.paths.manualTaskForIdentityFinished
-      .replace(socketSettings.pathParams.userId, this.identity.userId);
-
-    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
-  }
-
-  public async onProcessEnded(
-    callback: Messages.CallbackTypes.OnProcessEndedCallback,
-    subscribeOnce = false,
-  ): Promise<Subscription> {
-    return this.createSocketIoSubscription(socketSettings.paths.processEnded, callback, subscribeOnce);
-  }
-
-  public async removeSubscription(subscription: Subscription): Promise<void> {
-
-    if (!this.socketForIdentity) {
-      return;
-    }
-
-    const callbackToRemove = this.subscriptionCollection[subscription.id];
-    if (!callbackToRemove) {
-      return;
-    }
-
-    this.socketForIdentity.off(subscription.eventName, callbackToRemove);
-
-    delete this.subscriptionCollection[subscription.id];
+  public dispose(): void {
+    this.disconnetSocketIoClient();
   }
 
   // Process models and instances
@@ -793,6 +576,222 @@ export class ProcessEngineHttpClient {
     await this.httpClient.post<FinishExternalTaskRequestPayload<TResultType>, void>(url, payload, requestAuthHeaders);
   }
 
+  // Notifications
+  public async onActivityReached(
+    callback: Messages.CallbackTypes.OnActivityReachedCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.activityReached, callback, subscribeOnce);
+  }
+
+  public async onActivityFinished(
+    callback: Messages.CallbackTypes.OnActivityFinishedCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.activityFinished, callback, subscribeOnce);
+  }
+
+  // ------------ For backwards compatibility only
+  public async onCallActivityWaiting(
+    callback: Messages.CallbackTypes.OnCallActivityWaitingCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.callActivityWaiting, callback, subscribeOnce);
+  }
+
+  public async onCallActivityFinished(
+    callback: Messages.CallbackTypes.OnCallActivityFinishedCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.callActivityFinished, callback, subscribeOnce);
+  }
+  // ------------
+
+  public async onEmptyActivityWaiting(
+    callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityWaiting, callback, subscribeOnce);
+  }
+
+  public async onEmptyActivityFinished(
+    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityFinished, callback, subscribeOnce);
+  }
+
+  public async onEmptyActivityForIdentityWaiting(
+    callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.emptyActivityForIdentityWaiting
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onEmptyActivityForIdentityFinished(
+    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.emptyActivityForIdentityFinished
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onUserTaskWaiting(
+    callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.userTaskWaiting, callback, subscribeOnce);
+  }
+
+  public async onUserTaskFinished(
+    callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.userTaskFinished, callback, subscribeOnce);
+  }
+
+  public async onBoundaryEventTriggered(
+    callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.boundaryEventTriggered, callback, subscribeOnce);
+  }
+
+  public async onIntermediateThrowEventTriggered(
+    callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateThrowEventTriggered, callback, subscribeOnce);
+  }
+
+  public async onIntermediateCatchEventReached(
+    callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventReached, callback, subscribeOnce);
+  }
+
+  public async onIntermediateCatchEventFinished(
+    callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback,
+    subscribeOnce: boolean = false,
+  ): Promise<any> {
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventFinished, callback, subscribeOnce);
+  }
+
+  public async onUserTaskForIdentityWaiting(
+    callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.userTaskForIdentityWaiting
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onUserTaskForIdentityFinished(
+    callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.userTaskForIdentityFinished
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onProcessTerminated(
+    callback: Messages.CallbackTypes.OnProcessTerminatedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.processTerminated, callback, subscribeOnce);
+  }
+
+  public async onProcessError(
+    callback: Messages.CallbackTypes.OnProcessErrorCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.processError, callback, subscribeOnce);
+  }
+
+  public async onProcessStarted(
+    callback: Messages.CallbackTypes.OnProcessStartedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.processStarted, callback, subscribeOnce);
+  }
+
+  public async onProcessWithProcessModelIdStarted(
+    callback: Messages.CallbackTypes.OnProcessStartedCallback,
+    processModelId: string,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const eventName = socketSettings.paths.processInstanceStarted
+      .replace(socketSettings.pathParams.processModelId, processModelId);
+
+    return this.createSocketIoSubscription(eventName, callback, subscribeOnce);
+  }
+
+  public async onManualTaskWaiting(
+    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.manualTaskWaiting, callback, subscribeOnce);
+  }
+
+  public async onManualTaskFinished(
+    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.manualTaskFinished, callback, subscribeOnce);
+  }
+
+  public async onManualTaskForIdentityWaiting(
+    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.manualTaskForIdentityWaiting
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onManualTaskForIdentityFinished(
+    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    const socketEventName = socketSettings.paths.manualTaskForIdentityFinished
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
+
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
+  }
+
+  public async onProcessEnded(
+    callback: Messages.CallbackTypes.OnProcessEndedCallback,
+    subscribeOnce = false,
+  ): Promise<Subscription> {
+    return this.createSocketIoSubscription(socketSettings.paths.processEnded, callback, subscribeOnce);
+  }
+
+  public async removeSubscription(subscription: Subscription): Promise<void> {
+
+    if (!this.socketIoClientForIdentity) {
+      return;
+    }
+
+    const callbackToRemove = this.subscriptionCollection[subscription.id];
+    if (!callbackToRemove) {
+      return;
+    }
+
+    this.socketIoClientForIdentity.off(subscription.eventName, callbackToRemove);
+
+    delete this.subscriptionCollection[subscription.id];
+  }
+
   private createRequestAuthHeaders(identity: IIdentity): IRequestOptions {
     const noAuthTokenProvided = !identity || typeof identity.token !== 'string';
     if (noAuthTokenProvided) {
@@ -821,9 +820,9 @@ export class ProcessEngineHttpClient {
     this.createSocketForIdentity();
 
     if (subscribeOnce) {
-      this.socketForIdentity.once(route, callback);
+      this.socketIoClientForIdentity.once(route, callback);
     } else {
-      this.socketForIdentity.on(route, callback);
+      this.socketIoClientForIdentity.on(route, callback);
     }
 
     const subscriptionId = uuid.v4();
@@ -836,7 +835,7 @@ export class ProcessEngineHttpClient {
 
   private createSocketForIdentity(): void {
 
-    const existingSocket = this.socketForIdentity !== undefined;
+    const existingSocket = this.socketIoClientForIdentity !== undefined;
     if (existingSocket) {
       return;
     }
@@ -857,18 +856,17 @@ export class ProcessEngineHttpClient {
       },
     };
 
-    this.socketForIdentity = io(socketUrl, socketIoOptions);
+    this.socketIoClientForIdentity = io(socketUrl, socketIoOptions);
   }
 
-  private removeSocketForIdentity(): void {
-    const noSocketFound = !this.socketForIdentity;
-    if (noSocketFound) {
+  private disconnetSocketIoClient(): void {
+    if (!this.socketIoClientForIdentity) {
       return;
     }
-    this.socketForIdentity.disconnect();
-    this.socketForIdentity.close();
+    this.socketIoClientForIdentity.disconnect();
+    this.socketIoClientForIdentity.close();
 
-    this.socketForIdentity = undefined;
+    this.socketIoClientForIdentity = undefined;
   }
 
 }
