@@ -4,7 +4,8 @@ import * as io from 'socket.io-client';
 
 import {UnauthorizedError} from '@essential-projects/errors_ts';
 import {Subscription} from '@essential-projects/event_aggregator_contracts';
-import {IHttpClient, IRequestOptions} from '@essential-projects/http_contracts';
+import {IRequestOptions} from '@essential-projects/http_contracts';
+import {HttpClient} from '@essential-projects/http';
 import {IIdentity} from '@essential-projects/iam_contracts';
 
 import {
@@ -25,11 +26,6 @@ import {
 } from '@process-engine/external_task_api_contracts';
 
 /**
- * Associates a Socket with a userId taken from an IIdentity.
- */
-type IdentitySocketCollection = {[userId: string]: SocketIOClient.Socket};
-
-/**
  * Connects a Subscription ID to a specific callback.
  * This allows us to remove that Subscription from SocketIO
  * when "ExternalAccessor.removeSubscription" is called.
@@ -38,199 +34,184 @@ type SubscriptionCallbackAssociation = {[subscriptionId: string]: any};
 
 export class ProcessEngineHttpClient {
 
-  public config: any;
+  private readonly baseConsumerApiUrl = 'api/consumer/v1';
+  private readonly baseExternalTaskApiUrl = 'api/external_task/v1';;
+  private readonly processEngineUrl: string;
+  private readonly identity: IIdentity;
 
-  private baseUrl = 'api/consumer/v1';
+  private readonly dummyIdentity: IIdentity = {
+    token: 'ZHVtbXlfdG9rZW4=',
+    userId: 'dummy_token',
+  }
 
-  private socketCollection: IdentitySocketCollection = {};
+  private socketForIdentity: SocketIOClient.Socket;
   private subscriptionCollection: SubscriptionCallbackAssociation = {};
 
-  private httpClient: IHttpClient = undefined;
+  private httpClient: HttpClient;
 
-  constructor(httpClient: IHttpClient) {
-    this.httpClient = httpClient;
+  constructor(processEngineUrl: string, identity?: IIdentity) {
+    this.processEngineUrl = processEngineUrl;
+    this.identity = identity || this.dummyIdentity;
   }
 
-  public initializeSocket(identity: IIdentity): void {
-    this.createSocketForIdentity(identity);
+  public initialize(): void {
+    this.createSocketForIdentity();
   }
 
-  public disconnectSocket(identity: IIdentity): void {
-    this.removeSocketForIdentity(identity);
+  public disconnectSocket(): void {
+    this.removeSocketForIdentity();
   }
 
   // Notifications
-
   public async onActivityReached(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnActivityReachedCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.activityReached, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.activityReached, callback, subscribeOnce);
   }
 
   public async onActivityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnActivityFinishedCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.activityFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.activityFinished, callback, subscribeOnce);
   }
-
   // ------------ For backwards compatibility only
 
   public async onCallActivityWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnCallActivityWaitingCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.callActivityWaiting, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.callActivityWaiting, callback, subscribeOnce);
   }
 
   public async onCallActivityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnCallActivityFinishedCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.callActivityFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.callActivityFinished, callback, subscribeOnce);
   }
 
   // ------------
 
   public async onEmptyActivityWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.emptyActivityWaiting, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityWaiting, callback, subscribeOnce);
   }
 
   public async onEmptyActivityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.emptyActivityFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.emptyActivityFinished, callback, subscribeOnce);
   }
 
   public async onEmptyActivityForIdentityWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.emptyActivityForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onEmptyActivityForIdentityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.emptyActivityForIdentityFinished
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onUserTaskWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.userTaskWaiting, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.userTaskWaiting, callback, subscribeOnce);
   }
 
   public async onUserTaskFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.userTaskFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.userTaskFinished, callback, subscribeOnce);
   }
 
   public async onBoundaryEventTriggered(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.boundaryEventTriggered, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.boundaryEventTriggered, callback, subscribeOnce);
   }
 
   public async onIntermediateThrowEventTriggered(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.intermediateThrowEventTriggered, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateThrowEventTriggered, callback, subscribeOnce);
   }
 
   public async onIntermediateCatchEventReached(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.intermediateCatchEventReached, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventReached, callback, subscribeOnce);
   }
 
   public async onIntermediateCatchEventFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback,
     subscribeOnce: boolean = false,
   ): Promise<any> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.intermediateCatchEventFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventFinished, callback, subscribeOnce);
   }
 
   public async onUserTaskForIdentityWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.userTaskForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onUserTaskForIdentityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.userTaskForIdentityFinished
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onProcessTerminated(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnProcessTerminatedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.processTerminated, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.processTerminated, callback, subscribeOnce);
   }
 
   public async onProcessError(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnProcessErrorCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.processError, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.processError, callback, subscribeOnce);
   }
 
   public async onProcessStarted(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnProcessStartedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.processStarted, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.processStarted, callback, subscribeOnce);
   }
 
   public async onProcessWithProcessModelIdStarted(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnProcessStartedCallback,
     processModelId: string,
     subscribeOnce = false,
@@ -238,59 +219,53 @@ export class ProcessEngineHttpClient {
     const eventName = socketSettings.paths.processInstanceStarted
       .replace(socketSettings.pathParams.processModelId, processModelId);
 
-    return this.createSocketIoSubscription(identity, eventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(eventName, callback, subscribeOnce);
   }
 
   public async onManualTaskWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.manualTaskWaiting, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.manualTaskWaiting, callback, subscribeOnce);
   }
 
   public async onManualTaskFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.manualTaskFinished, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.manualTaskFinished, callback, subscribeOnce);
   }
 
   public async onManualTaskForIdentityWaiting(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.manualTaskForIdentityWaiting
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onManualTaskForIdentityFinished(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
     const socketEventName = socketSettings.paths.manualTaskForIdentityFinished
-      .replace(socketSettings.pathParams.userId, identity.userId);
+      .replace(socketSettings.pathParams.userId, this.identity.userId);
 
-    return this.createSocketIoSubscription(identity, socketEventName, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketEventName, callback, subscribeOnce);
   }
 
   public async onProcessEnded(
-    identity: IIdentity,
     callback: Messages.CallbackTypes.OnProcessEndedCallback,
     subscribeOnce = false,
   ): Promise<Subscription> {
-    return this.createSocketIoSubscription(identity, socketSettings.paths.processEnded, callback, subscribeOnce);
+    return this.createSocketIoSubscription(socketSettings.paths.processEnded, callback, subscribeOnce);
   }
 
-  public async removeSubscription(identity: IIdentity, subscription: Subscription): Promise<void> {
+  public async removeSubscription(subscription: Subscription): Promise<void> {
 
-    const socketForIdentity = this.getSocketForIdentity(identity);
-    if (!socketForIdentity) {
+    if (!this.socketForIdentity) {
       return;
     }
 
@@ -299,38 +274,38 @@ export class ProcessEngineHttpClient {
       return;
     }
 
-    socketForIdentity.off(subscription.eventName, callbackToRemove);
+    this.socketForIdentity.off(subscription.eventName, callbackToRemove);
 
     delete this.subscriptionCollection[subscription.id];
   }
 
   // Process models and instances
-  public async getProcessModels(identity: IIdentity): Promise<DataModels.ProcessModels.ProcessModelList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
-    const url = this.applyBaseUrl(ConsumerRestSettings.paths.processModels);
+    const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.processModels);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModelList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getProcessModelById(identity: IIdentity, processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getProcessModelById(processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelById.replace(ConsumerRestSettings.params.processModelId, processModelId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModel>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getProcessModelByProcessInstanceId(identity: IIdentity, processInstanceId: string): Promise<DataModels.ProcessModels.ProcessModel> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getProcessModelByProcessInstanceId(processInstanceId: string): Promise<DataModels.ProcessModels.ProcessModel> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelByProcessInstanceId.replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModel>(url, requestAuthHeaders);
 
@@ -338,7 +313,6 @@ export class ProcessEngineHttpClient {
   }
 
   public async startProcessInstance(
-    identity: IIdentity,
     processModelId: string,
     payload: DataModels.ProcessModels.ProcessStartRequestPayload,
     startCallbackType: DataModels.ProcessModels.StartCallbackType,
@@ -349,7 +323,7 @@ export class ProcessEngineHttpClient {
 
     const url = this.buildStartProcessInstanceUrl(processModelId, startCallbackType, endEventId, startEventId);
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const httpResponse = await this
       .httpClient
@@ -358,8 +332,7 @@ export class ProcessEngineHttpClient {
 
     const socketIoSubscriptionRequired = processEndedCallback !== undefined;
     if (socketIoSubscriptionRequired) {
-      const socketForIdentity = this.createSocketForIdentity(identity);
-      socketForIdentity.once(socketSettings.paths.processEnded, processEndedCallback);
+      this.createSocketIoSubscription(socketSettings.paths.processEnded, processEndedCallback, true);
     }
 
     return httpResponse.result;
@@ -386,13 +359,12 @@ export class ProcessEngineHttpClient {
       url = `${url}&end_event_id=${endEventId}`;
     }
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     return url;
   }
 
   public async getProcessResultForCorrelation(
-    identity: IIdentity,
     correlationId: string,
     processModelId: string,
   ): Promise<Array<DataModels.CorrelationResult>> {
@@ -400,20 +372,20 @@ export class ProcessEngineHttpClient {
       .replace(ConsumerRestSettings.params.correlationId, correlationId)
       .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const httpResponse = await this.httpClient.get<Array<DataModels.CorrelationResult>>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getProcessInstancesByIdentity(identity: IIdentity): Promise<Array<DataModels.ProcessInstance>> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getProcessInstancesByIdentity(): Promise<Array<DataModels.ProcessInstance>> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.getOwnProcessInstances;
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<Array<DataModels.ProcessInstance>>(url, requestAuthHeaders);
 
@@ -421,22 +393,22 @@ export class ProcessEngineHttpClient {
   }
 
   // Events
-  public async getEventsForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.Events.EventList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getEventsForProcessModel(processModelId: string): Promise<DataModels.Events.EventList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelEvents.replace(ConsumerRestSettings.params.processModelId, processModelId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getEventsForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.Events.EventList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getEventsForCorrelation(correlationId: string): Promise<DataModels.Events.EventList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.correlationEvents.replace(ConsumerRestSettings.params.correlationId, correlationId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
@@ -444,82 +416,78 @@ export class ProcessEngineHttpClient {
   }
 
   public async getEventsForProcessModelInCorrelation(
-    identity: IIdentity,
     processModelId: string,
     correlationId: string,
   ): Promise<DataModels.Events.EventList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelCorrelationEvents
       .replace(ConsumerRestSettings.params.processModelId, processModelId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async triggerMessageEvent(identity: IIdentity, messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async triggerMessageEvent(messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.triggerMessageEvent
       .replace(ConsumerRestSettings.params.eventName, messageName);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     await this.httpClient.post<DataModels.Events.EventTriggerPayload, void>(url, payload, requestAuthHeaders);
   }
 
-  public async triggerSignalEvent(identity: IIdentity, signalName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async triggerSignalEvent(signalName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.triggerSignalEvent
       .replace(ConsumerRestSettings.params.eventName, signalName);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     await this.httpClient.post<DataModels.Events.EventTriggerPayload, void>(url, payload, requestAuthHeaders);
   }
 
   // Empty Activities
-  public async getEmptyActivitiesForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getEmptyActivitiesForProcessModel(processModelId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelEmptyActivities
       .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
-    const url = this.applyBaseUrl(restPath);
+    const url = this.applyBaseConsumerApiUrl(restPath);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getEmptyActivitiesForProcessInstance(
-    identity: IIdentity,
-    processInstanceId: string,
-  ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getEmptyActivitiesForProcessInstance(processInstanceId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processInstanceEmptyActivities
       .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
 
-    const url = this.applyBaseUrl(restPath);
+    const url = this.applyBaseConsumerApiUrl(restPath);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getEmptyActivitiesForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getEmptyActivitiesForCorrelation(correlationId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.correlationEmptyActivities
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    const url = this.applyBaseUrl(restPath);
+    const url = this.applyBaseConsumerApiUrl(restPath);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
@@ -527,17 +495,16 @@ export class ProcessEngineHttpClient {
   }
 
   public async getEmptyActivitiesForProcessModelInCorrelation(
-    identity: IIdentity,
     processModelId: string,
     correlationId: string,
   ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelCorrelationEmptyActivities
       .replace(ConsumerRestSettings.params.processModelId, processModelId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    const url = this.applyBaseUrl(restPath);
+    const url = this.applyBaseConsumerApiUrl(restPath);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
@@ -545,9 +512,9 @@ export class ProcessEngineHttpClient {
   }
 
   public async getWaitingEmptyActivitiesByIdentity(identity: IIdentity): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
-    const url = this.applyBaseUrl(ConsumerRestSettings.paths.getOwnEmptyActivities);
+    const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnEmptyActivities);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
@@ -555,52 +522,51 @@ export class ProcessEngineHttpClient {
   }
 
   public async finishEmptyActivity(
-    identity: IIdentity,
     processInstanceId: string,
     correlationId: string,
     emptyActivityInstanceId: string,
   ): Promise<void> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.finishEmptyActivity
       .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId)
       .replace(ConsumerRestSettings.params.emptyActivityInstanceId, emptyActivityInstanceId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const body: {} = {};
     await this.httpClient.post(url, body, requestAuthHeaders);
   }
 
   // UserTasks
-  public async getUserTasksForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getUserTasksForProcessModel(processModelId: string): Promise<DataModels.UserTasks.UserTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelUserTasks.replace(ConsumerRestSettings.params.processModelId, processModelId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getUserTasksForProcessInstance(identity: IIdentity, processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getUserTasksForProcessInstance(processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processInstanceUserTasks.replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getUserTasksForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getUserTasksForCorrelation(correlationId: string): Promise<DataModels.UserTasks.UserTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.correlationUserTasks.replace(ConsumerRestSettings.params.correlationId, correlationId);
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
@@ -608,17 +574,16 @@ export class ProcessEngineHttpClient {
   }
 
   public async getUserTasksForProcessModelInCorrelation(
-    identity: IIdentity,
     processModelId: string,
     correlationId: string,
   ): Promise<DataModels.UserTasks.UserTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.processModelCorrelationUserTasks
       .replace(ConsumerRestSettings.params.processModelId, processModelId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
@@ -626,10 +591,10 @@ export class ProcessEngineHttpClient {
   }
 
   public async getWaitingUserTasksByIdentity(identity: IIdentity): Promise<DataModels.UserTasks.UserTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.getOwnUserTasks;
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
@@ -637,61 +602,60 @@ export class ProcessEngineHttpClient {
   }
 
   public async finishUserTask(
-    identity: IIdentity,
     processInstanceId: string,
     correlationId: string,
     userTaskInstanceId: string,
     userTaskResult: DataModels.UserTasks.UserTaskResult,
   ): Promise<void> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ConsumerRestSettings.paths.finishUserTask
       .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId)
       .replace(ConsumerRestSettings.params.userTaskInstanceId, userTaskInstanceId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseConsumerApiUrl(url);
 
     await this.httpClient.post<DataModels.UserTasks.UserTaskResult, void>(url, userTaskResult, requestAuthHeaders);
   }
 
   // ManualTasks
-  public async getManualTasksForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getManualTasksForProcessModel(processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths
       .processModelManualTasks
       .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getManualTasksForProcessInstance(identity: IIdentity, processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getManualTasksForProcessInstance(processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths
       .processInstanceManualTasks
       .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
 
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getManualTasksForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+  public async getManualTasksForCorrelation(correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths
       .correlationManualTasks
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
@@ -699,17 +663,16 @@ export class ProcessEngineHttpClient {
   }
 
   public async getManualTasksForProcessModelInCorrelation(
-    identity: IIdentity,
     processModelId: string,
     correlationId: string,
   ): Promise<DataModels.ManualTasks.ManualTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.processModelCorrelationManualTasks
       .replace(ConsumerRestSettings.params.processModelId, processModelId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
@@ -717,10 +680,10 @@ export class ProcessEngineHttpClient {
   }
 
   public async getWaitingManualTasksByIdentity(identity: IIdentity): Promise<DataModels.ManualTasks.ManualTaskList> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.getOwnManualTasks;
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
@@ -728,26 +691,24 @@ export class ProcessEngineHttpClient {
   }
 
   public async finishManualTask(
-    identity: IIdentity,
     processInstanceId: string,
     correlationId: string,
     manualTaskInstanceId: string,
   ): Promise<void> {
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.finishManualTask
       .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
       .replace(ConsumerRestSettings.params.correlationId, correlationId)
       .replace(ConsumerRestSettings.params.manualTaskInstanceId, manualTaskInstanceId);
 
-    const url = this.applyBaseUrl(urlRestPart);
+    const url = this.applyBaseConsumerApiUrl(urlRestPart);
 
     const body: {} = {};
     await this.httpClient.post(url, body, requestAuthHeaders);
   }
 
   public async fetchAndLockExternalTasks<TPayloadType>(
-    identity: IIdentity,
     workerId: string,
     topicName: string,
     maxTasks: number,
@@ -755,10 +716,10 @@ export class ProcessEngineHttpClient {
     lockDuration: number,
   ): Promise<Array<ExternalTask<TPayloadType>>> {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ExternalTaskRestSettings.paths.fetchAndLockExternalTasks;
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseExternalTaskUrl(url);
 
     const payload = new FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
 
@@ -767,28 +728,28 @@ export class ProcessEngineHttpClient {
     return httpResponse.result;
   }
 
-  public async extendLock(identity: IIdentity, workerId: string, externalTaskId: string, additionalDuration: number): Promise<void> {
+  public async extendLock(workerId: string, externalTaskId: string, additionalDuration: number): Promise<void> {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ExternalTaskRestSettings.paths.extendLock
       .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseExternalTaskUrl(url);
 
     const payload = new ExtendLockRequestPayload(workerId, additionalDuration);
 
     await this.httpClient.post<ExtendLockRequestPayload, void>(url, payload, requestAuthHeaders);
   }
 
-  public async handleBpmnError(identity: IIdentity, workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
+  public async handleBpmnError(workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ExternalTaskRestSettings.paths.handleBpmnError
       .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseExternalTaskUrl(url);
 
     const payload = new HandleBpmnErrorRequestPayload(workerId, errorCode);
 
@@ -796,33 +757,32 @@ export class ProcessEngineHttpClient {
   }
 
   public async handleServiceError(
-    identity: IIdentity,
     workerId: string,
     externalTaskId: string,
     errorMessage: string,
     errorDetails: string,
   ): Promise<void> {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ExternalTaskRestSettings.paths.handleServiceError
       .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseExternalTaskUrl(url);
 
     const payload = new HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
 
     await this.httpClient.post<HandleServiceErrorRequestPayload, void>(url, payload, requestAuthHeaders);
   }
 
-  public async finishExternalTask<TResultType>(identity: IIdentity, workerId: string, externalTaskId: string, results: TResultType): Promise<void> {
+  public async finishExternalTask<TResultType>(workerId: string, externalTaskId: string, results: TResultType): Promise<void> {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     let url = ExternalTaskRestSettings.paths.finishExternalTask
       .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    url = this.applyBaseExternalTaskUrl(url);
 
     const payload = new FinishExternalTaskRequestPayload(workerId, results);
 
@@ -844,18 +804,22 @@ export class ProcessEngineHttpClient {
     return requestAuthHeaders;
   }
 
-  private applyBaseUrl(url: string): string {
-    return `${this.baseUrl}${url}`;
+  private applyBaseConsumerApiUrl(url: string): string {
+    return `${this.baseConsumerApiUrl}${url}`;
   }
 
-  private createSocketIoSubscription(identity: IIdentity, route: string, callback: any, subscribeOnce: boolean): Subscription {
+  private applyBaseExternalTaskUrl(url: string): string {
+    return `${this.baseExternalTaskApiUrl}${url}`;
+  }
 
-    const socketForIdentity = this.createSocketForIdentity(identity);
+  private createSocketIoSubscription(route: string, callback: any, subscribeOnce: boolean): Subscription {
+
+    this.createSocketForIdentity();
 
     if (subscribeOnce) {
-      socketForIdentity.once(route, callback);
+      this.socketForIdentity.once(route, callback);
     } else {
-      socketForIdentity.on(route, callback);
+      this.socketForIdentity.on(route, callback);
     }
 
     const subscriptionId = uuid.v4();
@@ -866,49 +830,41 @@ export class ProcessEngineHttpClient {
     return subscription;
   }
 
-  private createSocketForIdentity(identity: IIdentity): SocketIOClient.Socket {
+  private createSocketForIdentity(): void {
 
-    const existingSocket = this.getSocketForIdentity(identity);
+    const existingSocket = this.socketForIdentity !== undefined;
     if (existingSocket) {
-      return existingSocket;
+      return;
     }
 
-    const noAuthTokenProvided = !identity || typeof identity.token !== 'string';
+    const noAuthTokenProvided = !this.identity || typeof this.identity.token !== 'string';
     if (noAuthTokenProvided) {
       throw new UnauthorizedError('No auth token provided!');
     }
 
-    const socketUrl = `${this.config.socketUrl}/${socketSettings.namespace}`;
+    const socketUrl = `${this.processEngineUrl}/${socketSettings.namespace}`;
     const socketIoOptions: SocketIOClient.ConnectOpts = {
       transportOptions: {
         polling: {
           extraHeaders: {
-            Authorization: identity.token,
+            Authorization: this.identity.token,
           },
         },
       },
     };
 
-    this.socketCollection[identity.userId] = io(socketUrl, socketIoOptions);
-
-    return this.socketCollection[identity.userId];
+    this.socketForIdentity = io(socketUrl, socketIoOptions);
   }
 
-  private removeSocketForIdentity(identity: IIdentity): void {
-    const socketForIdentity = this.getSocketForIdentity(identity);
-
-    const noSocketFound = !socketForIdentity;
+  private removeSocketForIdentity(): void {
+    const noSocketFound = !this.socketForIdentity;
     if (noSocketFound) {
       return;
     }
-    socketForIdentity.disconnect();
-    socketForIdentity.close();
+    this.socketForIdentity.disconnect();
+    this.socketForIdentity.close();
 
-    delete this.socketCollection[identity.userId];
-  }
-
-  private getSocketForIdentity(identity: IIdentity): SocketIOClient.Socket {
-    return this.socketCollection[identity.userId];
+    this.socketForIdentity = undefined;
   }
 
 }
