@@ -55,6 +55,10 @@ export class ProcessEngineHttpClient {
   }
 
   public initialize(): void {
+    this.httpClient = new HttpClient();
+    this.httpClient.config = {
+      url: this.processEngineUrl,
+    };
     this.createSocketForIdentity();
   }
 
