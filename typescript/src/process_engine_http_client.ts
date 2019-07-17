@@ -8,12 +8,21 @@ import {IHttpClient, IRequestOptions} from '@essential-projects/http_contracts';
 import {IIdentity} from '@essential-projects/iam_contracts';
 
 import {
+  restSettings as ConsumerRestSettings,
   DataModels,
-  IConsumerApi,
   Messages,
-  restSettings,
   socketSettings,
 } from '@process-engine/consumer_api_contracts';
+
+import {
+  ExtendLockRequestPayload,
+  ExternalTask,
+  restSettings as ExternalTaskRestSettings,
+  FetchAndLockRequestPayload,
+  FinishExternalTaskRequestPayload,
+  HandleBpmnErrorRequestPayload,
+  HandleServiceErrorRequestPayload,
+} from '@process-engine/external_task_api_contracts';
 
 /**
  * Associates a Socket with a userId taken from an IIdentity.
@@ -27,7 +36,7 @@ type IdentitySocketCollection = {[userId: string]: SocketIOClient.Socket};
  */
 type SubscriptionCallbackAssociation = {[subscriptionId: string]: any};
 
-export class ProcessEngineHttpClient implements IConsumerApi {
+export class ProcessEngineHttpClient {
 
   public config: any;
 
@@ -299,7 +308,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getProcessModels(identity: IIdentity): Promise<DataModels.ProcessModels.ProcessModelList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const url = this.applyBaseUrl(restSettings.paths.processModels);
+    const url = this.applyBaseUrl(ConsumerRestSettings.paths.processModels);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModelList>(url, requestAuthHeaders);
 
@@ -309,7 +318,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getProcessModelById(identity: IIdentity, processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelById.replace(restSettings.params.processModelId, processModelId);
+    let url = ConsumerRestSettings.paths.processModelById.replace(ConsumerRestSettings.params.processModelId, processModelId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModel>(url, requestAuthHeaders);
@@ -320,7 +329,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getProcessModelByProcessInstanceId(identity: IIdentity, processInstanceId: string): Promise<DataModels.ProcessModels.ProcessModel> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelByProcessInstanceId.replace(restSettings.params.processInstanceId, processInstanceId);
+    let url = ConsumerRestSettings.paths.processModelByProcessInstanceId.replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModel>(url, requestAuthHeaders);
@@ -362,8 +371,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
     endEventId: string,
     startEventId?: string,
   ): string {
-    let url = restSettings.paths.startProcessInstance
-      .replace(restSettings.params.processModelId, processModelId);
+    let url = ConsumerRestSettings.paths.startProcessInstance
+      .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
     url = `${url}?start_callback_type=${startCallbackType}`;
 
@@ -387,9 +396,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
     correlationId: string,
     processModelId: string,
   ): Promise<Array<DataModels.CorrelationResult>> {
-    let url = restSettings.paths.getProcessResultForCorrelation
-      .replace(restSettings.params.correlationId, correlationId)
-      .replace(restSettings.params.processModelId, processModelId);
+    let url = ConsumerRestSettings.paths.getProcessResultForCorrelation
+      .replace(ConsumerRestSettings.params.correlationId, correlationId)
+      .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
     url = this.applyBaseUrl(url);
 
@@ -403,7 +412,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getProcessInstancesByIdentity(identity: IIdentity): Promise<Array<DataModels.ProcessInstance>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.getOwnProcessInstances;
+    let url = ConsumerRestSettings.paths.getOwnProcessInstances;
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<Array<DataModels.ProcessInstance>>(url, requestAuthHeaders);
@@ -415,7 +424,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getEventsForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.Events.EventList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelEvents.replace(restSettings.params.processModelId, processModelId);
+    let url = ConsumerRestSettings.paths.processModelEvents.replace(ConsumerRestSettings.params.processModelId, processModelId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
@@ -426,7 +435,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getEventsForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.Events.EventList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.correlationEvents.replace(restSettings.params.correlationId, correlationId);
+    let url = ConsumerRestSettings.paths.correlationEvents.replace(ConsumerRestSettings.params.correlationId, correlationId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
@@ -441,9 +450,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<DataModels.Events.EventList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelCorrelationEvents
-      .replace(restSettings.params.processModelId, processModelId)
-      .replace(restSettings.params.correlationId, correlationId);
+    let url = ConsumerRestSettings.paths.processModelCorrelationEvents
+      .replace(ConsumerRestSettings.params.processModelId, processModelId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     url = this.applyBaseUrl(url);
 
@@ -455,8 +464,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async triggerMessageEvent(identity: IIdentity, messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.triggerMessageEvent
-      .replace(restSettings.params.eventName, messageName);
+    let url = ConsumerRestSettings.paths.triggerMessageEvent
+      .replace(ConsumerRestSettings.params.eventName, messageName);
 
     url = this.applyBaseUrl(url);
 
@@ -466,8 +475,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async triggerSignalEvent(identity: IIdentity, signalName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.triggerSignalEvent
-      .replace(restSettings.params.eventName, signalName);
+    let url = ConsumerRestSettings.paths.triggerSignalEvent
+      .replace(ConsumerRestSettings.params.eventName, signalName);
 
     url = this.applyBaseUrl(url);
 
@@ -478,8 +487,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getEmptyActivitiesForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.processModelEmptyActivities
-      .replace(restSettings.params.processModelId, processModelId);
+    const restPath = ConsumerRestSettings.paths.processModelEmptyActivities
+      .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
     const url = this.applyBaseUrl(restPath);
 
@@ -494,8 +503,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.processInstanceEmptyActivities
-      .replace(restSettings.params.processInstanceId, processInstanceId);
+    const restPath = ConsumerRestSettings.paths.processInstanceEmptyActivities
+      .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
 
     const url = this.applyBaseUrl(restPath);
 
@@ -507,8 +516,8 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getEmptyActivitiesForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.correlationEmptyActivities
-      .replace(restSettings.params.correlationId, correlationId);
+    const restPath = ConsumerRestSettings.paths.correlationEmptyActivities
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     const url = this.applyBaseUrl(restPath);
 
@@ -524,9 +533,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.processModelCorrelationEmptyActivities
-      .replace(restSettings.params.processModelId, processModelId)
-      .replace(restSettings.params.correlationId, correlationId);
+    const restPath = ConsumerRestSettings.paths.processModelCorrelationEmptyActivities
+      .replace(ConsumerRestSettings.params.processModelId, processModelId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     const url = this.applyBaseUrl(restPath);
 
@@ -538,7 +547,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getWaitingEmptyActivitiesByIdentity(identity: IIdentity): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const url = this.applyBaseUrl(restSettings.paths.getOwnEmptyActivities);
+    const url = this.applyBaseUrl(ConsumerRestSettings.paths.getOwnEmptyActivities);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
@@ -553,10 +562,10 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<void> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.finishEmptyActivity
-      .replace(restSettings.params.processInstanceId, processInstanceId)
-      .replace(restSettings.params.correlationId, correlationId)
-      .replace(restSettings.params.emptyActivityInstanceId, emptyActivityInstanceId);
+    let url = ConsumerRestSettings.paths.finishEmptyActivity
+      .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId)
+      .replace(ConsumerRestSettings.params.emptyActivityInstanceId, emptyActivityInstanceId);
 
     url = this.applyBaseUrl(url);
 
@@ -568,7 +577,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getUserTasksForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.UserTasks.UserTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelUserTasks.replace(restSettings.params.processModelId, processModelId);
+    let url = ConsumerRestSettings.paths.processModelUserTasks.replace(ConsumerRestSettings.params.processModelId, processModelId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
@@ -579,7 +588,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getUserTasksForProcessInstance(identity: IIdentity, processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processInstanceUserTasks.replace(restSettings.params.processInstanceId, processInstanceId);
+    let url = ConsumerRestSettings.paths.processInstanceUserTasks.replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
@@ -590,7 +599,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getUserTasksForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.UserTasks.UserTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.correlationUserTasks.replace(restSettings.params.correlationId, correlationId);
+    let url = ConsumerRestSettings.paths.correlationUserTasks.replace(ConsumerRestSettings.params.correlationId, correlationId);
     url = this.applyBaseUrl(url);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
@@ -605,9 +614,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<DataModels.UserTasks.UserTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.processModelCorrelationUserTasks
-      .replace(restSettings.params.processModelId, processModelId)
-      .replace(restSettings.params.correlationId, correlationId);
+    let url = ConsumerRestSettings.paths.processModelCorrelationUserTasks
+      .replace(ConsumerRestSettings.params.processModelId, processModelId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     url = this.applyBaseUrl(url);
 
@@ -619,7 +628,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getWaitingUserTasksByIdentity(identity: IIdentity): Promise<DataModels.UserTasks.UserTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths.getOwnUserTasks;
+    const urlRestPart = ConsumerRestSettings.paths.getOwnUserTasks;
     const url = this.applyBaseUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
@@ -636,10 +645,10 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<void> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.finishUserTask
-      .replace(restSettings.params.processInstanceId, processInstanceId)
-      .replace(restSettings.params.correlationId, correlationId)
-      .replace(restSettings.params.userTaskInstanceId, userTaskInstanceId);
+    let url = ConsumerRestSettings.paths.finishUserTask
+      .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId)
+      .replace(ConsumerRestSettings.params.userTaskInstanceId, userTaskInstanceId);
 
     url = this.applyBaseUrl(url);
 
@@ -650,9 +659,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getManualTasksForProcessModel(identity: IIdentity, processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths
+    const urlRestPart = ConsumerRestSettings.paths
       .processModelManualTasks
-      .replace(restSettings.params.processModelId, processModelId);
+      .replace(ConsumerRestSettings.params.processModelId, processModelId);
 
     const url = this.applyBaseUrl(urlRestPart);
 
@@ -664,9 +673,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getManualTasksForProcessInstance(identity: IIdentity, processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths
+    const urlRestPart = ConsumerRestSettings.paths
       .processInstanceManualTasks
-      .replace(restSettings.params.processInstanceId, processInstanceId);
+      .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId);
 
     const url = this.applyBaseUrl(urlRestPart);
 
@@ -678,9 +687,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getManualTasksForCorrelation(identity: IIdentity, correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths
+    const urlRestPart = ConsumerRestSettings.paths
       .correlationManualTasks
-      .replace(restSettings.params.correlationId, correlationId);
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     const url = this.applyBaseUrl(urlRestPart);
 
@@ -696,9 +705,9 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<DataModels.ManualTasks.ManualTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths.processModelCorrelationManualTasks
-      .replace(restSettings.params.processModelId, processModelId)
-      .replace(restSettings.params.correlationId, correlationId);
+    const urlRestPart = ConsumerRestSettings.paths.processModelCorrelationManualTasks
+      .replace(ConsumerRestSettings.params.processModelId, processModelId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId);
 
     const url = this.applyBaseUrl(urlRestPart);
 
@@ -710,7 +719,7 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   public async getWaitingManualTasksByIdentity(identity: IIdentity): Promise<DataModels.ManualTasks.ManualTaskList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths.getOwnManualTasks;
+    const urlRestPart = ConsumerRestSettings.paths.getOwnManualTasks;
     const url = this.applyBaseUrl(urlRestPart);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
@@ -726,15 +735,98 @@ export class ProcessEngineHttpClient implements IConsumerApi {
   ): Promise<void> {
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const urlRestPart = restSettings.paths.finishManualTask
-      .replace(restSettings.params.processInstanceId, processInstanceId)
-      .replace(restSettings.params.correlationId, correlationId)
-      .replace(restSettings.params.manualTaskInstanceId, manualTaskInstanceId);
+    const urlRestPart = ConsumerRestSettings.paths.finishManualTask
+      .replace(ConsumerRestSettings.params.processInstanceId, processInstanceId)
+      .replace(ConsumerRestSettings.params.correlationId, correlationId)
+      .replace(ConsumerRestSettings.params.manualTaskInstanceId, manualTaskInstanceId);
 
     const url = this.applyBaseUrl(urlRestPart);
 
     const body: {} = {};
     await this.httpClient.post(url, body, requestAuthHeaders);
+  }
+
+  public async fetchAndLockExternalTasks<TPayloadType>(
+    identity: IIdentity,
+    workerId: string,
+    topicName: string,
+    maxTasks: number,
+    longPollingTimeout: number,
+    lockDuration: number,
+  ): Promise<Array<ExternalTask<TPayloadType>>> {
+
+    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+
+    let url = ExternalTaskRestSettings.paths.fetchAndLockExternalTasks;
+    url = this.applyBaseUrl(url);
+
+    const payload = new FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
+
+    const httpResponse = await this.httpClient.post<FetchAndLockRequestPayload, Array<ExternalTask<TPayloadType>>>(url, payload, requestAuthHeaders);
+
+    return httpResponse.result;
+  }
+
+  public async extendLock(identity: IIdentity, workerId: string, externalTaskId: string, additionalDuration: number): Promise<void> {
+
+    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+
+    let url = ExternalTaskRestSettings.paths.extendLock
+      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
+
+    url = this.applyBaseUrl(url);
+
+    const payload = new ExtendLockRequestPayload(workerId, additionalDuration);
+
+    await this.httpClient.post<ExtendLockRequestPayload, void>(url, payload, requestAuthHeaders);
+  }
+
+  public async handleBpmnError(identity: IIdentity, workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
+
+    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+
+    let url = ExternalTaskRestSettings.paths.handleBpmnError
+      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
+
+    url = this.applyBaseUrl(url);
+
+    const payload = new HandleBpmnErrorRequestPayload(workerId, errorCode);
+
+    await this.httpClient.post<HandleBpmnErrorRequestPayload, void>(url, payload, requestAuthHeaders);
+  }
+
+  public async handleServiceError(
+    identity: IIdentity,
+    workerId: string,
+    externalTaskId: string,
+    errorMessage: string,
+    errorDetails: string,
+  ): Promise<void> {
+
+    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+
+    let url = ExternalTaskRestSettings.paths.handleServiceError
+      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
+
+    url = this.applyBaseUrl(url);
+
+    const payload = new HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
+
+    await this.httpClient.post<HandleServiceErrorRequestPayload, void>(url, payload, requestAuthHeaders);
+  }
+
+  public async finishExternalTask<TResultType>(identity: IIdentity, workerId: string, externalTaskId: string, results: TResultType): Promise<void> {
+
+    const requestAuthHeaders = this.createRequestAuthHeaders(identity);
+
+    let url = ExternalTaskRestSettings.paths.finishExternalTask
+      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
+
+    url = this.applyBaseUrl(url);
+
+    const payload = new FinishExternalTaskRequestPayload(workerId, results);
+
+    await this.httpClient.post<FinishExternalTaskRequestPayload<TResultType>, void>(url, payload, requestAuthHeaders);
   }
 
   private createRequestAuthHeaders(identity: IIdentity): IRequestOptions {
