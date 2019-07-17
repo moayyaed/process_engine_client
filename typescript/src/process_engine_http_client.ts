@@ -101,11 +101,10 @@ export class ProcessEngineHttpClient {
 
   public async startProcessInstance(
     processModelId: string,
-    payload: DataModels.ProcessModels.ProcessStartRequestPayload,
-    startCallbackType: DataModels.ProcessModels.StartCallbackType,
-    startEventId?: string,
+    startEventId: string,
+    payload?: DataModels.ProcessModels.ProcessStartRequestPayload,
+    startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-    processEndedCallback?: Messages.CallbackTypes.OnProcessEndedCallback,
   ): Promise<DataModels.ProcessModels.ProcessStartResponsePayload> {
 
     const url = this.buildStartProcessInstanceUrl(processModelId, startCallbackType, endEventId, startEventId);
@@ -116,11 +115,6 @@ export class ProcessEngineHttpClient {
       .httpClient
       // eslint-disable-next-line max-len
       .post<DataModels.ProcessModels.ProcessStartRequestPayload, DataModels.ProcessModels.ProcessStartResponsePayload>(url, payload, requestAuthHeaders);
-
-    const socketIoSubscriptionRequired = processEndedCallback !== undefined;
-    if (socketIoSubscriptionRequired) {
-      this.createSocketIoSubscription(socketSettings.paths.processEnded, processEndedCallback, true);
-    }
 
     return httpResponse.result;
   }

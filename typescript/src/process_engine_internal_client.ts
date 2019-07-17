@@ -43,9 +43,9 @@ export class ProcessEngineInternalClient {
 
   public async startProcessInstance(
     processModelId: string,
-    payload: DataModels.ProcessModels.ProcessStartRequestPayload,
+    startEventId: string,
+    payload?: DataModels.ProcessModels.ProcessStartRequestPayload,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
-    startEventId?: string,
     endEventId?: string,
   ): Promise<DataModels.ProcessModels.ProcessStartResponsePayload> {
     return this.consumerApiService.startProcessInstance(this.identity, processModelId, payload, startCallbackType, startEventId, endEventId);
