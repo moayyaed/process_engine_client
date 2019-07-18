@@ -5,10 +5,6 @@ import {ExternalTask} from '@process-engine/external_task_api_contracts';
 
 export interface IProcessEngineClient {
 
-  initialize(): void;
-
-  dispose(): void;
-
   // Process models and instances
   getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList>;
 
@@ -51,7 +47,7 @@ export interface IProcessEngineClient {
     correlationId: string,
   ): Promise<DataModels.EmptyActivities.EmptyActivityList>;
 
-  getSuspendedEmptyActivitiesByIdentity(identity: IIdentity): Promise<DataModels.EmptyActivities.EmptyActivityList>;
+  getSuspendedEmptyActivitiesForClientIdentity(): Promise<DataModels.EmptyActivities.EmptyActivityList>;
 
   finishEmptyActivity(
     processInstanceId: string,

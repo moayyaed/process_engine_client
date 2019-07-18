@@ -11,7 +11,9 @@ import {
   IExternalTaskApi,
 } from '@process-engine/external_task_api_contracts';
 
-export class ProcessEngineInternalClient {
+import {IProcessEngineClient} from './contracts/iprocess_engine_client';
+
+export class ProcessEngineInternalClient implements IProcessEngineClient {
 
   private readonly consumerApiService: IConsumerApi;
   private readonly externalApiService: IExternalTaskApi;
@@ -29,8 +31,8 @@ export class ProcessEngineInternalClient {
   }
 
   // Process models and instances
-  public async getProcessModels(identity: IIdentity): Promise<DataModels.ProcessModels.ProcessModelList> {
-    return this.consumerApiService.getProcessModels(identity);
+  public async getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList> {
+    return this.consumerApiService.getProcessModels(this.identity);
   }
 
   public async getProcessModelById(processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {

@@ -25,6 +25,9 @@ import {
   HandleServiceErrorRequestPayload,
 } from '@process-engine/external_task_api_contracts';
 
+import {IDisposable} from './contracts/idisposable';
+import {IProcessEngineClient} from './contracts/iprocess_engine_client';
+
 /**
  * Connects a Subscription ID to a specific callback.
  * This allows us to remove that Subscription from SocketIO
@@ -32,7 +35,7 @@ import {
  */
 type SubscriptionCallbackAssociation = {[subscriptionId: string]: any};
 
-export class ProcessEngineHttpClient {
+export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposable {
 
   private readonly baseConsumerApiUrl = 'api/consumer/v1';
   private readonly baseExternalTaskApiUrl = 'api/external_task/v1';;
@@ -266,7 +269,7 @@ export class ProcessEngineHttpClient {
     return httpResponse.result;
   }
 
-  public async getSuspendedEmptyActivitiesByIdentity(identity: IIdentity): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  public async getSuspendedEmptyActivitiesForClientIdentity(): Promise<DataModels.EmptyActivities.EmptyActivityList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnEmptyActivities);
