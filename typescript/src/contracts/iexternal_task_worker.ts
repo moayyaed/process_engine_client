@@ -1,4 +1,4 @@
-import {IExternalTaskWorker} from '@process-engine/external_task_api_contracts';
+import {ExternalTask, IExternalTaskResult, IExternalTaskWorker} from '@process-engine/external_task_api_contracts';
 
 export interface IExternalTaskWorker extends IExternalTaskWorker {
   /**
@@ -11,3 +11,5 @@ export interface IExternalTaskWorker extends IExternalTaskWorker {
    */
   stop(): void;
 }
+
+export type HandleExternalTaskAction<TPayload> = (payload: TPayload, externalTask?: ExternalTask<TPayload>) => Promise<IExternalTaskResult>;
