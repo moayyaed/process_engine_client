@@ -3,7 +3,7 @@ import {IIdentity} from '@essential-projects/iam_contracts';
 import {DataModels, Messages} from '@process-engine/consumer_api_contracts';
 import {HandleExternalTaskAction} from '@process-engine/external_task_api_contracts';
 
-import {ExternalTaskWorker} from '../external_task_worker';
+import {IExternalTaskWorker} from './iexternal_task_worker';
 
 export interface IProcessEngineClient {
 
@@ -104,7 +104,7 @@ export interface IProcessEngineClient {
     handleAction: HandleExternalTaskAction<TPayload>,
     maxTasks?: number,
     timeout?: number,
-  ): ExternalTaskWorker;
+  ): IExternalTaskWorker;
 
   // Socket.IO Notifications
   onEmptyActivityWaiting(callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;

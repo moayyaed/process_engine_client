@@ -6,10 +6,10 @@ import {
   IConsumerApi,
   Messages,
 } from '@process-engine/consumer_api_contracts';
-import {HandleExternalTaskAction, IExternalTaskApi} from '@process-engine/external_task_api_contracts';
+import {IExternalTaskApi} from '@process-engine/external_task_api_contracts';
 
-import {IProcessEngineClient} from './contracts/iprocess_engine_client';
-import {ExternalTaskWorker} from './external_task_worker';
+import {HandleExternalTaskAction, IExternalTaskWorker, IProcessEngineClient} from './contracts/index';
+import {ExternalTaskWorker} from './external_task_worker/index';
 
 export class ProcessEngineInternalClient implements IProcessEngineClient {
 
@@ -189,7 +189,7 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     handleAction: HandleExternalTaskAction<TPayload>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): ExternalTaskWorker {
+  ): IExternalTaskWorker {
     const externalTaskWorker = new ExternalTaskWorker(this.externalTaskApiService);
 
     externalTaskWorker.waitForAndHandle<TPayload>(this.identity, topic, maxTasks, timeout, handleAction);

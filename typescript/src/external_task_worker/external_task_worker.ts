@@ -4,11 +4,10 @@ import * as uuid from 'node-uuid';
 import {IIdentity} from '@essential-projects/iam_contracts';
 import {
   ExternalTask,
-  HandleExternalTaskAction,
   IExternalTaskApi,
 } from '@process-engine/external_task_api_contracts';
 
-import {IExternalTaskWorker} from '../contracts/iexternal_task_worker';
+import {HandleExternalTaskAction, IExternalTaskWorker} from '../contracts/iexternal_task_worker';
 
 const logger: Logger = Logger.createLogger('processengine:external_task:worker');
 
@@ -107,7 +106,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
       const interval =
         setInterval(async (): Promise<void> => this.extendLocks<TPayload>(identity, externalTask), this.lockDuration - lockExtensionBuffer);
 
-      const result = await handleAction(externalTask);
+      const result = await handleAction(externalTask.payload, externalTask);
       clearInterval(interval);
 
       await result.sendToExternalTaskApi(this.externalTaskApi, identity, this.workerId);

@@ -15,10 +15,12 @@ import {
   socketSettings,
 } from '@process-engine/consumer_api_contracts';
 
-import {HandleExternalTaskAction} from '@process-engine/external_task_api_contracts';
-
-import {IDisposable} from './contracts/idisposable';
-import {IProcessEngineClient} from './contracts/iprocess_engine_client';
+import {
+  HandleExternalTaskAction,
+  IDisposable,
+  IExternalTaskWorker,
+  IProcessEngineClient,
+} from './contracts/index';
 import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker/index';
 
 /**
@@ -473,7 +475,7 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
     handleAction: HandleExternalTaskAction<TPayload>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): ExternalTaskWorker {
+  ): IExternalTaskWorker {
 
     const externalTaskHttpClient = new ExternalTaskHttpClient();
     externalTaskHttpClient.config = {
