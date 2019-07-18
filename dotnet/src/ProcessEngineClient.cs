@@ -51,7 +51,7 @@ namespace ProcessEngineClient
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="processModelId"></param>
         /// <param name="startEventId"></param>
@@ -68,7 +68,7 @@ namespace ProcessEngineClient
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="processModelId"></param>
         /// <param name="startEventId"></param>
@@ -87,7 +87,7 @@ namespace ProcessEngineClient
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="processModelId"></param>
         /// <param name="startEventId"></param>
@@ -138,7 +138,7 @@ namespace ProcessEngineClient
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="topic"></param>
         /// <param name="maxTasks"></param>
@@ -146,7 +146,7 @@ namespace ProcessEngineClient
         /// <param name="handleAction"></param>
         /// <typeparam name="TPayload"></typeparam>
         /// <returns></returns>
-        public async Task SubscribeToExternalTasksWithTopic<TPayload>(
+        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload>(
             string topic,
             int maxTasks,
             int timeout,
@@ -155,18 +155,19 @@ namespace ProcessEngineClient
         {
             var externalTaskWorker = new ExternalTaskWorker(this.ExternalTaskApi);
 
-            await externalTaskWorker.WaitForHandle(this.Identity.ExternalTaskIdentity, topic, maxTasks, timeout, handleAction);
+            externalTaskWorker.WaitForHandle(this.Identity.ExternalTaskIdentity, topic, maxTasks, timeout, handleAction);
 
+            return externalTaskWorker;
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="topic"></param>
         /// <param name="handleAction"></param>
         /// <typeparam name="TPayload"></typeparam>
         /// <returns></returns>
-        public async Task SubscribeToExternalTasksWithTopic<TPayload>(
+        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload>(
             string topic,
             HandleExternalTaskAction<TPayload> handleAction)
         where TPayload : new()
@@ -174,7 +175,7 @@ namespace ProcessEngineClient
             var maxTasks = 10;
             var timeout = 1000;
 
-            await this.SubscribeToExternalTasksWithTopic<TPayload>(topic, maxTasks, timeout, handleAction);
+            return this.SubscribeToExternalTasksWithTopic<TPayload>(topic, maxTasks, timeout, handleAction);
         }
     }
 }
