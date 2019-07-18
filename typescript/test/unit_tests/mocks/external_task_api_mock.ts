@@ -5,11 +5,10 @@ import {
   IExternalTaskApi,
 } from '@process-engine/external_task_api_contracts';
 
-import {HttpClientConfig} from '../../../src/contracts/index';
+export class ExternalTaskApiMock implements IExternalTaskApi {
 
-export class ExternalTaskHttpClientMock implements IExternalTaskApi {
-
-  public config: HttpClientConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public config: any;
 
   public initialize(): void {}
 
