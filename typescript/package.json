@@ -53,6 +53,6 @@
     "prepare": "npm run build",
     "lint": "eslint src/**/*.ts src/*.ts",
     "lint-fix": "eslint --fix src/**/*.ts src/*.ts",
-    "test": "ts-mocha -p ./tsconfig.json ./test/unit_tests/**/*.spec.ts"
+    "test": "ts-mocha -p ./tsconfig.json ./test/unit_tests/**/*.spec.ts  -t 5000"
   }
 }
