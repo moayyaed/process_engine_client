@@ -23,7 +23,9 @@
   "dependencies": {
     "@essential-projects/event_aggregator_contracts": "^4.1.0",
     "@essential-projects/http_contracts": "^2.4.0",
-    "@essential-projects/iam_contracts": "^3.5.0"
+    "@essential-projects/iam_contracts": "^3.5.0",
+    "@process-engine/consumer_api_contracts": "^7.0.0",
+    "@process-engine/external_task_api_contracts": "^1.1.0"
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.0",
