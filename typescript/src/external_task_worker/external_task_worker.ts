@@ -6,8 +6,9 @@ import {
   ExternalTask,
   HandleExternalTaskAction,
   IExternalTaskApi,
-  IExternalTaskWorker,
 } from '@process-engine/external_task_api_contracts';
+
+import {IExternalTaskWorker} from '../contracts/iexternal_task_worker';
 
 const logger: Logger = Logger.createLogger('processengine:external_task:worker');
 
@@ -18,8 +19,14 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
   private readonly lockDuration = 30000;
   private readonly externalTaskApi: IExternalTaskApi = undefined;
 
+  private pollingIsActive: boolean = false;
+
   constructor(externalTaskApi: IExternalTaskApi) {
     this.externalTaskApi = externalTaskApi;
+  }
+
+  public get isActive(): boolean {
+    return this.pollingIsActive;
   }
 
   public get workerId(): string {
@@ -34,8 +41,8 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
     handleAction: HandleExternalTaskAction<TPayload>,
   ): Promise<void> {
 
-    const keepPolling = true;
-    while (keepPolling) {
+    this.pollingIsActive = true;
+    while (this.pollingIsActive) {
 
       const externalTasks = await this.fetchAndLockExternalTasks<TPayload>(
         identity,
@@ -57,6 +64,10 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
 
       await Promise.all(executeTaskPromises);
     }
+  }
+
+  public stop(): void {
+    this.pollingIsActive = false;
   }
 
   private async fetchAndLockExternalTasks<TPayload>(
