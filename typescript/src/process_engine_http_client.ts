@@ -31,7 +31,6 @@ type SubscriptionCallbackAssociation = {[subscriptionId: string]: any};
 export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposable {
 
   private readonly baseConsumerApiUrl = 'api/consumer/v1';
-  private readonly baseExternalTaskApiUrl = 'api/external_task/v1';;
   private readonly processEngineUrl: string;
   private readonly identity: IIdentity;
 
@@ -739,10 +738,6 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
 
   private applyBaseConsumerApiUrl(url: string): string {
     return `${this.baseConsumerApiUrl}${url}`;
-  }
-
-  private applyBaseExternalTaskUrl(url: string): string {
-    return `${this.baseExternalTaskApiUrl}${url}`;
   }
 
   private createSocketIoSubscription(route: string, callback: any, subscribeOnce: boolean): Subscription {
