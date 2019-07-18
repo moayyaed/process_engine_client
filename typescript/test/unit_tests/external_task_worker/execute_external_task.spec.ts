@@ -28,11 +28,9 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
 
     let payloadPassedToHandler: any;
     let externalTaskPassedTohandler: any;
+    let handleActionCalled = false;
 
-    it('Should call the provided ActionHandler callback.', async (): Promise<void> => {
-
-      let handleActionCalled = false;
-
+    before(async (): Promise<void> => {
       const callback = (payload: any, task: any): Promise<void> => {
         handleActionCalled = true;
         payloadPassedToHandler = payload;
@@ -42,7 +40,9 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
       };
 
       await externalTaskWorker.executeExternalTask(sampleIdentity, sampleExternalTask as any, callback);
+    });
 
+    it('Should call the provided ActionHandler callback.', async (): Promise<void> => {
       should(handleActionCalled).be.true();
     });
 
@@ -55,7 +55,7 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
     });
   });
 
-  describe('Extend locks while handler is processing the ExternalTask', (): void => {
+  describe('Extend locks', (): void => {
 
     const externalTaskApiMock = new ExternalTaskApiMock();
     const externalTaskWorker = new ExternalTaskWorker(externalTaskApiMock);
@@ -122,7 +122,7 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
 
     externalTaskWorker.extendLocks = (): Promise<void> => Promise.resolve();
 
-    it('Should pass a successfully finished ExternalTask\'s result to the corresponding ExternalTaskApi function.', async (): Promise<void> => {
+    it('Should pass a successfully finished ExternalTask\'s result to finishExternalTask.', async (): Promise<void> => {
 
       finishWasCalled = false;
       errorWasCalled = false;
@@ -142,7 +142,7 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
       should(errorWasCalled).be.false();
     });
 
-    it('Should pass a failed finished ExternalTask\'s error to the corresponding ExternalTaskApi function.', async (): Promise<void> => {
+    it('Should pass a failed finished ExternalTask\'s error to handleServiceError.', async (): Promise<void> => {
 
       finishWasCalled = false;
       errorWasCalled = false;
@@ -155,8 +155,6 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
 
       should(finishWasCalled).be.false();
       should(errorWasCalled).be.true();
-
     });
-
   });
 });
