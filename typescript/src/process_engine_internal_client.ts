@@ -6,17 +6,15 @@ import {
   IConsumerApi,
   Messages,
 } from '@process-engine/consumer_api_contracts';
-import {
-  ExternalTask,
-  IExternalTaskApi,
-} from '@process-engine/external_task_api_contracts';
+import {HandleExternalTaskAction, IExternalTaskApi} from '@process-engine/external_task_api_contracts';
 
 import {IProcessEngineClient} from './contracts/iprocess_engine_client';
+import {ExternalTaskWorker} from './external_task_worker';
 
 export class ProcessEngineInternalClient implements IProcessEngineClient {
 
   private readonly consumerApiService: IConsumerApi;
-  private readonly externalApiService: IExternalTaskApi;
+  private readonly externalTaskApiService: IExternalTaskApi;
   private readonly identity: IIdentity;
 
   private readonly dummyIdentity: IIdentity = {
@@ -24,9 +22,9 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     userId: 'dummy_token',
   }
 
-  constructor(consumerApiService: IConsumerApi, externalApiService: IExternalTaskApi, identity?: IIdentity) {
+  constructor(consumerApiService: IConsumerApi, externalTaskApiService: IExternalTaskApi, identity?: IIdentity) {
     this.consumerApiService = consumerApiService;
-    this.externalApiService = externalApiService;
+    this.externalTaskApiService = externalTaskApiService;
     this.identity = identity || this.dummyIdentity;
   }
 
@@ -186,41 +184,17 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
   }
 
   // ExternalTasks
-  public async fetchAndLockExternalTasks<TPayloadType>(
-    workerId: string,
-    topicName: string,
-    maxTasks: number,
-    longPollingTimeout: number,
-    lockDuration: number,
-  ): Promise<Array<ExternalTask<TPayloadType>>> {
-    return this
-      .externalApiService
-      .fetchAndLockExternalTasks<TPayloadType>(this.identity, workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
-  }
+  public subscribeToExternalTasksWithTopic<TPayload>(
+    topic: string,
+    handleAction: HandleExternalTaskAction<TPayload>,
+    maxTasks: number = 10,
+    timeout: number = 1000,
+  ): ExternalTaskWorker {
+    const externalTaskWorker = new ExternalTaskWorker(this.externalTaskApiService);
 
-  public async extendExternalTaskLock(workerId: string, externalTaskId: string, additionalDuration: number): Promise<void> {
-    return this.externalApiService.extendLock(this.identity, workerId, externalTaskId, additionalDuration);
-  }
+    externalTaskWorker.waitForAndHandle<TPayload>(this.identity, topic, maxTasks, timeout, handleAction);
 
-  public async handleExternalTaskBpmnError(workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
-    return this.externalApiService.handleBpmnError(this.identity, workerId, externalTaskId, errorCode);
-  }
-
-  public async handleExternalTaskServiceError(
-    workerId: string,
-    externalTaskId: string,
-    errorMessage: string,
-    errorDetails: string,
-  ): Promise<void> {
-    return this.externalApiService.handleServiceError(this.identity, workerId, externalTaskId, errorMessage, errorDetails);
-  }
-
-  public async finishExternalTask<TResultType>(
-    workerId: string,
-    externalTaskId: string,
-    payload: TResultType,
-  ): Promise<void> {
-    return this.externalApiService.finishExternalTask(this.identity, workerId, externalTaskId, payload);
+    return externalTaskWorker;
   }
 
   // Notifications

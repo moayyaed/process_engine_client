@@ -1,7 +1,9 @@
 import {Subscription} from '@essential-projects/event_aggregator_contracts';
 import {IIdentity} from '@essential-projects/iam_contracts';
 import {DataModels, Messages} from '@process-engine/consumer_api_contracts';
-import {ExternalTask} from '@process-engine/external_task_api_contracts';
+import {HandleExternalTaskAction} from '@process-engine/external_task_api_contracts';
+
+import {ExternalTaskWorker} from '../external_task_worker';
 
 export interface IProcessEngineClient {
 
@@ -96,26 +98,13 @@ export interface IProcessEngineClient {
     manualTaskInstanceId: string,
   ): Promise<void>;
 
-  fetchAndLockExternalTasks<TPayloadType>(
-    workerId: string,
-    topicName: string,
-    maxTasks: number,
-    longPollingTimeout: number,
-    lockDuration: number,
-  ): Promise<Array<ExternalTask<TPayloadType>>>;
-
-  extendExternalTaskLock(workerId: string, externalTaskId: string, additionalDuration: number): Promise<void>;
-
-  handleExternalTaskBpmnError(workerId: string, externalTaskId: string, errorCode: string): Promise<void>;
-
-  handleExternalTaskServiceError(
-    workerId: string,
-    externalTaskId: string,
-    errorMessage: string,
-    errorDetails: string,
-  ): Promise<void> ;
-
-  finishExternalTask<TResultType>(workerId: string, externalTaskId: string, results: TResultType): Promise<void>;
+  // ExternalTasks
+  subscribeToExternalTasksWithTopic<TPayload>(
+    topic: string,
+    handleAction: HandleExternalTaskAction<TPayload>,
+    maxTasks?: number,
+    timeout?: number,
+  ): ExternalTaskWorker;
 
   // Notifications
   onActivityReached(callback: Messages.CallbackTypes.OnActivityReachedCallback, subscribeOnce?: boolean): Promise<Subscription>;

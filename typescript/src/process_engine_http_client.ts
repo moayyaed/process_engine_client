@@ -15,18 +15,11 @@ import {
   socketSettings,
 } from '@process-engine/consumer_api_contracts';
 
-import {
-  ExtendLockRequestPayload,
-  ExternalTask,
-  restSettings as ExternalTaskRestSettings,
-  FetchAndLockRequestPayload,
-  FinishExternalTaskRequestPayload,
-  HandleBpmnErrorRequestPayload,
-  HandleServiceErrorRequestPayload,
-} from '@process-engine/external_task_api_contracts';
+import {HandleExternalTaskAction} from '@process-engine/external_task_api_contracts';
 
 import {IDisposable} from './contracts/idisposable';
 import {IProcessEngineClient} from './contracts/iprocess_engine_client';
+import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker/index';
 
 /**
  * Connects a Subscription ID to a specific callback.
@@ -466,85 +459,25 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
     await this.httpClient.post(url, body, requestAuthHeaders);
   }
 
-  public async fetchAndLockExternalTasks<TPayloadType>(
-    workerId: string,
-    topicName: string,
-    maxTasks: number,
-    longPollingTimeout: number,
-    lockDuration: number,
-  ): Promise<Array<ExternalTask<TPayloadType>>> {
+  // ExternalTasks
+  public subscribeToExternalTasksWithTopic<TPayload>(
+    topic: string,
+    handleAction: HandleExternalTaskAction<TPayload>,
+    maxTasks: number = 10,
+    timeout: number = 1000,
+  ): ExternalTaskWorker {
 
-    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
+    const externalTaskHttpClient = new ExternalTaskHttpClient();
+    externalTaskHttpClient.config = {
+      url: this.processEngineUrl,
+    };
+    externalTaskHttpClient.initialize();
 
-    let url = ExternalTaskRestSettings.paths.fetchAndLockExternalTasks;
-    url = this.applyBaseExternalTaskUrl(url);
+    const externalTaskWorker = new ExternalTaskWorker(externalTaskHttpClient);
 
-    const payload = new FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
+    externalTaskWorker.waitForAndHandle<TPayload>(this.identity, topic, maxTasks, timeout, handleAction);
 
-    const httpResponse = await this.httpClient.post<FetchAndLockRequestPayload, Array<ExternalTask<TPayloadType>>>(url, payload, requestAuthHeaders);
-
-    return httpResponse.result;
-  }
-
-  public async extendExternalTaskLock(workerId: string, externalTaskId: string, additionalDuration: number): Promise<void> {
-
-    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
-
-    let url = ExternalTaskRestSettings.paths.extendLock
-      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
-
-    url = this.applyBaseExternalTaskUrl(url);
-
-    const payload = new ExtendLockRequestPayload(workerId, additionalDuration);
-
-    await this.httpClient.post<ExtendLockRequestPayload, void>(url, payload, requestAuthHeaders);
-  }
-
-  public async handleExternalTaskBpmnError(workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
-
-    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
-
-    let url = ExternalTaskRestSettings.paths.handleBpmnError
-      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
-
-    url = this.applyBaseExternalTaskUrl(url);
-
-    const payload = new HandleBpmnErrorRequestPayload(workerId, errorCode);
-
-    await this.httpClient.post<HandleBpmnErrorRequestPayload, void>(url, payload, requestAuthHeaders);
-  }
-
-  public async handleExternalTaskServiceError(
-    workerId: string,
-    externalTaskId: string,
-    errorMessage: string,
-    errorDetails: string,
-  ): Promise<void> {
-
-    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
-
-    let url = ExternalTaskRestSettings.paths.handleServiceError
-      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
-
-    url = this.applyBaseExternalTaskUrl(url);
-
-    const payload = new HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
-
-    await this.httpClient.post<HandleServiceErrorRequestPayload, void>(url, payload, requestAuthHeaders);
-  }
-
-  public async finishExternalTask<TResultType>(workerId: string, externalTaskId: string, results: TResultType): Promise<void> {
-
-    const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
-
-    let url = ExternalTaskRestSettings.paths.finishExternalTask
-      .replace(ExternalTaskRestSettings.params.externalTaskId, externalTaskId);
-
-    url = this.applyBaseExternalTaskUrl(url);
-
-    const payload = new FinishExternalTaskRequestPayload(workerId, results);
-
-    await this.httpClient.post<FinishExternalTaskRequestPayload<TResultType>, void>(url, payload, requestAuthHeaders);
+    return externalTaskWorker;
   }
 
   // Notifications
