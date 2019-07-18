@@ -39,8 +39,7 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.fetchAndLockExternalTasks;
-    url = this.applyBaseUrl(url);
+    const url = this.applyBaseUrl(restSettings.paths.fetchAndLockExternalTasks);
 
     const payload = new FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
 
@@ -53,10 +52,10 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.extendLock
+    const restPath = restSettings.paths.extendLock
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    const url = this.applyBaseUrl(restPath);
 
     const payload = new ExtendLockRequestPayload(workerId, additionalDuration);
 
@@ -67,10 +66,10 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.handleBpmnError
+    const restPath = restSettings.paths.handleBpmnError
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    const url = this.applyBaseUrl(restPath);
 
     const payload = new HandleBpmnErrorRequestPayload(workerId, errorCode);
 
@@ -87,10 +86,10 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.handleServiceError
+    const restPath = restSettings.paths.handleServiceError
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    const url = this.applyBaseUrl(restPath);
 
     const payload = new HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
 
@@ -101,10 +100,10 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    let url = restSettings.paths.finishExternalTask
+    const restPath = restSettings.paths.finishExternalTask
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
-    url = this.applyBaseUrl(url);
+    const url = this.applyBaseUrl(restPath);
 
     const payload = new FinishExternalTaskRequestPayload(workerId, results);
 
