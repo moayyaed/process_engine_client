@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as uuid from 'node-uuid';
 import * as io from 'socket.io-client';
 
@@ -30,7 +29,7 @@ import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker
  * This allows us to remove that Subscription from SocketIO
  * when "ExternalAccessor.removeSubscription" is called.
  */
-type SubscriptionCallbackAssociation = {[subscriptionId: string]: any};
+type SubscriptionCallbackAssociation = {[subscriptionId: string]: Function};
 
 export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposable {
 
@@ -138,7 +137,8 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
       httpResponse.result.correlationId,
       httpResponse.result.processInstanceId,
       httpResponse.result.endEventId,
-      httpResponse.result.tokenPayload as any, // TODO: tokenPayload is of type string!?
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      httpResponse.result.tokenPayload as any, // TODO: Can't cast to ProcessStartResponse, because tokenPayload is of type string!?
     );
 
     return publicResponse;
@@ -560,42 +560,42 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
   public async onBoundaryEventTriggered(
     callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.boundaryEventTriggered, callback, subscribeOnce);
   }
 
   public async onIntermediateThrowEventTriggered(
     callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.intermediateThrowEventTriggered, callback, subscribeOnce);
   }
 
   public async onIntermediateCatchEventReached(
     callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventReached, callback, subscribeOnce);
   }
 
   public async onIntermediateCatchEventFinished(
     callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.intermediateCatchEventFinished, callback, subscribeOnce);
   }
 
   public async onNonInteractiveActivityReached(
     callback: Messages.CallbackTypes.OnActivityReachedCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.activityReached, callback, subscribeOnce);
   }
 
   public async onNonInteractiveActivityFinished(
     callback: Messages.CallbackTypes.OnActivityFinishedCallback,
     subscribeOnce: boolean = false,
-  ): Promise<any> {
+  ): Promise<Subscription> {
     return this.createSocketIoSubscription(socketSettings.paths.activityFinished, callback, subscribeOnce);
   }
 
@@ -689,7 +689,7 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
     return `${this.baseConsumerApiUrl}${url}`;
   }
 
-  private createSocketIoSubscription(route: string, callback: any, subscribeOnce: boolean): Subscription {
+  private createSocketIoSubscription(route: string, callback: Function, subscribeOnce: boolean): Subscription {
 
     this.createSocketForIdentity();
 

@@ -8,7 +8,13 @@ import {
 } from '@process-engine/consumer_api_contracts';
 import {IExternalTaskApi} from '@process-engine/external_task_api_contracts';
 
-import {HandleExternalTaskAction, IExternalTaskWorker, IProcessEngineClient, ProcessStartRequest, ProcessStartResponse} from './contracts/index';
+import {
+  HandleExternalTaskAction,
+  IExternalTaskWorker,
+  IProcessEngineClient,
+  ProcessStartRequest,
+  ProcessStartResponse,
+} from './contracts/index';
 import {ExternalTaskWorker} from './external_task_worker/index';
 
 export class ProcessEngineInternalClient implements IProcessEngineClient {
@@ -70,7 +76,8 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
       response.correlationId,
       response.processInstanceId,
       response.endEventId,
-      response.tokenPayload as any, // TODO: tokenPayload is of type string!?
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      response.tokenPayload as any, // TODO: Can't cast to ProcessStartResponse, because tokenPayload is of type string!?
     );
 
     return publicResponse;
