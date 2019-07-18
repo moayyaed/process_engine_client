@@ -1,5 +1,7 @@
 import {Subscription} from '@essential-projects/event_aggregator_contracts';
 import {IIdentity} from '@essential-projects/iam_contracts';
+import {DataModels, Messages} from '@process-engine/consumer_api_contracts';
+import {ExternalTask} from '@process-engine/external_task_api_contracts';
 
 export interface IProcessEngineClient {
 
@@ -120,14 +122,14 @@ export interface IProcessEngineClient {
   finishExternalTask<TResultType>(workerId: string, externalTaskId: string, results: TResultType): Promise<void>;
 
   // Notifications
-  onActivityReached(callback: Messages.CallbackTypes.OnActivityReachedCallback, subscribeOnce?: boolean): Promise<any>;
+  onActivityReached(callback: Messages.CallbackTypes.OnActivityReachedCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onActivityFinished(callback: Messages.CallbackTypes.OnActivityFinishedCallback, subscribeOnce?: boolean): Promise<any>;
+  onActivityFinished(callback: Messages.CallbackTypes.OnActivityFinishedCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
   // ------------ For backwards compatibility only
-  onCallActivityWaiting(callback: Messages.CallbackTypes.OnCallActivityWaitingCallback, subscribeOnce?: boolean): Promise<any>;
+  onCallActivityWaiting(callback: Messages.CallbackTypes.OnCallActivityWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onCallActivityFinished(callback: Messages.CallbackTypes.OnCallActivityFinishedCallback, subscribeOnce?: boolean): Promise<any>;
+  onCallActivityFinished(callback: Messages.CallbackTypes.OnCallActivityFinishedCallback, subscribeOnce?: boolean): Promise<Subscription>;
   // ------------
 
   onEmptyActivityWaiting(callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
@@ -136,19 +138,31 @@ export interface IProcessEngineClient {
 
   onEmptyActivityForIdentityWaiting(callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onEmptyActivityForIdentityFinished(callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback, subscribeOnce?: boolean): Promise<Subscription>;
+  onEmptyActivityForIdentityFinished(
+    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
+    subscribeOnce?: boolean,
+  ): Promise<Subscription>;
 
   onUserTaskWaiting(callback: Messages.CallbackTypes.OnUserTaskWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
   onUserTaskFinished(callback: Messages.CallbackTypes.OnUserTaskFinishedCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onBoundaryEventTriggered(callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback, subscribeOnce?: boolean): Promise<any>;
+  onBoundaryEventTriggered(callback: Messages.CallbackTypes.OnBoundaryEventTriggeredCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onIntermediateThrowEventTriggered(callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback, subscribeOnce?: boolean): Promise<any>;
+  onIntermediateThrowEventTriggered(
+    callback: Messages.CallbackTypes.OnIntermediateThrowEventTriggeredCallback,
+    subscribeOnce?: boolean,
+  ): Promise<Subscription>;
 
-  onIntermediateCatchEventReached(callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback, subscribeOnce?: boolean): Promise<any>;
+  onIntermediateCatchEventReached(
+    callback: Messages.CallbackTypes.OnIntermediateCatchEventReachedCallback,
+    subscribeOnce?: boolean,
+  ): Promise<Subscription>;
 
-  onIntermediateCatchEventFinished(callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback, subscribeOnce?: boolean): Promise<any>;
+  onIntermediateCatchEventFinished(
+    callback: Messages.CallbackTypes.OnIntermediateCatchEventFinishedCallback,
+    subscribeOnce?: boolean,
+  ): Promise<Subscription>;
 
   onUserTaskForIdentityWaiting(callback: Messages.CallbackTypes.OnUserTaskWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
@@ -160,7 +174,11 @@ export interface IProcessEngineClient {
 
   onProcessStarted(callback: Messages.CallbackTypes.OnProcessStartedCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
-  onProcessWithProcessModelIdStarted(callback: Messages.CallbackTypes.OnProcessStartedCallback, processModelId: string, subscribeOnce?: boolean): Promise<Subscription>;
+  onProcessWithProcessModelIdStarted(
+    callback: Messages.CallbackTypes.OnProcessStartedCallback,
+    processModelId: string,
+    subscribeOnce?: boolean,
+  ): Promise<Subscription>;
 
   onManualTaskWaiting(callback: Messages.CallbackTypes.OnManualTaskWaitingCallback, subscribeOnce?: boolean): Promise<Subscription>;
 
