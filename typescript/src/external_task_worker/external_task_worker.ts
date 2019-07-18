@@ -131,9 +131,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
   }
 
   private async sleep(milliseconds: number): Promise<void> {
-    return new Promise<void>((resolve: Function): void => {
-      setTimeout((): void => { resolve(); }, milliseconds);
-    });
+    await new Promise<void>((resolve): any => setTimeout(resolve, milliseconds));
   }
 
 }
