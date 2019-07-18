@@ -19,6 +19,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
   private readonly externalTaskApi: IExternalTaskApi = undefined;
 
   private pollingIsActive: boolean = false;
+  private pollingInterval = 1000;
 
   constructor(externalTaskApi: IExternalTaskApi) {
     this.externalTaskApi = externalTaskApi;
@@ -51,7 +52,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
       );
 
       if (externalTasks.length === 0) {
-        await this.sleep(1000);
+        await this.sleep(this.pollingInterval);
         continue;
       }
 
