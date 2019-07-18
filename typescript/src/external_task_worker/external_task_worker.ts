@@ -101,18 +101,21 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
     handleAction: HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
+    let extendLocKInterval: NodeJS.Timeout;
+
     try {
       const lockExtensionBuffer = 5000;
 
-      const interval =
+      extendLocKInterval =
         setInterval(async (): Promise<void> => this.extendLocks<TPayload>(identity, externalTask), this.lockDuration - lockExtensionBuffer);
 
       const result = await handleAction(externalTask.payload, externalTask);
-      clearInterval(interval);
+      clearInterval(extendLocKInterval);
 
       this.externalTaskApi.finishExternalTask(identity, this.workerId, externalTask.id, result);
     } catch (error) {
       logger.error('Failed to execute ExternalTask!', error.message, error.stack);
+      clearInterval(extendLocKInterval);
       await this.externalTaskApi.handleServiceError(identity, this.workerId, externalTask.id, error.message, '');
     }
   }
