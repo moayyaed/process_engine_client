@@ -5,8 +5,7 @@ import {HandleExternalTaskAction} from '@process-engine/external_task_api_contra
 
 import {IExternalTaskWorker} from './iexternal_task_worker';
 
-import {ProcessStartRequest} from './process_start_request';
-import {ProcessStartResponse} from './process_start_response';
+import {ProcessStartRequest, ProcessStartResponse} from '../types/index';
 
 export interface IProcessEngineClient {
 

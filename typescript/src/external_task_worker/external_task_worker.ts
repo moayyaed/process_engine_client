@@ -7,7 +7,7 @@ import {
   IExternalTaskApi,
 } from '@process-engine/external_task_api_contracts';
 
-import {HandleExternalTaskAction, IExternalTaskWorker} from '../contracts/iexternal_task_worker';
+import {HandleExternalTaskAction, IExternalTaskWorker} from '../contracts/index';
 
 const logger: Logger = Logger.createLogger('processengine:external_task:worker');
 
