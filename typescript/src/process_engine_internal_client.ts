@@ -198,36 +198,6 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
   }
 
   // Notifications
-  public async onActivityReached(
-    callback: Messages.CallbackTypes.OnActivityReachedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onActivityReached(this.identity, callback, subscribeOnce);
-  }
-
-  public async onActivityFinished(
-    callback: Messages.CallbackTypes.OnActivityFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onActivityFinished(this.identity, callback, subscribeOnce);
-  }
-
-  // ------------ For backwards compatibility only
-  public async onCallActivityWaiting(
-    callback: Messages.CallbackTypes.OnCallActivityWaitingCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onCallActivityWaiting(this.identity, callback, subscribeOnce);
-  }
-
-  public async onCallActivityFinished(
-    callback: Messages.CallbackTypes.OnCallActivityFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onCallActivityFinished(this.identity, callback, subscribeOnce);
-  }
-  // ------------
-
   public async onEmptyActivityWaiting(
     callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
     subscribeOnce: boolean = false,
@@ -242,18 +212,18 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     return this.consumerApiService.onEmptyActivityFinished(this.identity, callback, subscribeOnce);
   }
 
-  public async onEmptyActivityForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnEmptyActivityWaitingCallback,
+  public async onManualTaskWaiting(
+    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.consumerApiService.onEmptyActivityForIdentityWaiting(this.identity, callback, subscribeOnce);
+    return this.consumerApiService.onManualTaskWaiting(this.identity, callback, subscribeOnce);
   }
 
-  public async onEmptyActivityForIdentityFinished(
-    callback: Messages.CallbackTypes.OnEmptyActivityFinishedCallback,
+  public async onManualTaskFinished(
+    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.consumerApiService.onEmptyActivityForIdentityFinished(this.identity, callback, subscribeOnce);
+    return this.consumerApiService.onManualTaskFinished(this.identity, callback, subscribeOnce);
   }
 
   public async onUserTaskWaiting(
@@ -268,20 +238,6 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
     return this.consumerApiService.onUserTaskFinished(this.identity, callback, subscribeOnce);
-  }
-
-  public async onUserTaskForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnUserTaskWaitingCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onUserTaskForIdentityWaiting(this.identity, callback, subscribeOnce);
-  }
-
-  public async onUserTaskForIdentityFinished(
-    callback: Messages.CallbackTypes.OnUserTaskFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onUserTaskForIdentityFinished(this.identity, callback, subscribeOnce);
   }
 
   public async onBoundaryEventTriggered(
@@ -312,32 +268,18 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     return this.consumerApiService.onIntermediateCatchEventFinished(this.identity, callback, subscribeOnce);
   }
 
-  public async onManualTaskWaiting(
-    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
+  public async onNonInteractiveActivityReached(
+    callback: Messages.CallbackTypes.OnActivityReachedCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.consumerApiService.onManualTaskWaiting(this.identity, callback, subscribeOnce);
+    return this.consumerApiService.onActivityReached(this.identity, callback, subscribeOnce);
   }
 
-  public async onManualTaskFinished(
-    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
+  public async onNonInteractiveActivityFinished(
+    callback: Messages.CallbackTypes.OnActivityFinishedCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.consumerApiService.onManualTaskFinished(this.identity, callback, subscribeOnce);
-  }
-
-  public async onManualTaskForIdentityWaiting(
-    callback: Messages.CallbackTypes.OnManualTaskWaitingCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onManualTaskForIdentityWaiting(this.identity, callback, subscribeOnce);
-  }
-
-  public async onManualTaskForIdentityFinished(
-    callback: Messages.CallbackTypes.OnManualTaskFinishedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onManualTaskForIdentityFinished(this.identity, callback, subscribeOnce);
+    return this.consumerApiService.onActivityFinished(this.identity, callback, subscribeOnce);
   }
 
   public async onProcessStarted(
@@ -347,12 +289,11 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     return this.consumerApiService.onProcessStarted(this.identity, callback, subscribeOnce);
   }
 
-  public async onProcessWithProcessModelIdStarted(
-    callback: Messages.CallbackTypes.OnProcessStartedCallback,
-    processModelId: string,
+  public async onProcessEnded(
+    callback: Messages.CallbackTypes.OnProcessEndedCallback,
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
-    return this.consumerApiService.onProcessWithProcessModelIdStarted(this.identity, callback, processModelId, subscribeOnce);
+    return this.consumerApiService.onProcessEnded(this.identity, callback, subscribeOnce);
   }
 
   public async onProcessTerminated(
@@ -367,13 +308,6 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     subscribeOnce: boolean = false,
   ): Promise<Subscription> {
     return this.consumerApiService.onProcessError(this.identity, callback, subscribeOnce);
-  }
-
-  public async onProcessEnded(
-    callback: Messages.CallbackTypes.OnProcessEndedCallback,
-    subscribeOnce: boolean = false,
-  ): Promise<Subscription> {
-    return this.consumerApiService.onProcessEnded(this.identity, callback, subscribeOnce);
   }
 
   public async removeSubscription(subscription: Subscription): Promise<void> {
