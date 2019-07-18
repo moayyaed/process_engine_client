@@ -1,9 +1,8 @@
 import {Subscription} from '@essential-projects/event_aggregator_contracts';
 import {IIdentity} from '@essential-projects/iam_contracts';
 import {DataModels, Messages} from '@process-engine/consumer_api_contracts';
-import {HandleExternalTaskAction} from '@process-engine/external_task_api_contracts';
 
-import {IExternalTaskWorker} from './iexternal_task_worker';
+import {HandleExternalTaskAction, IExternalTaskWorker} from './iexternal_task_worker';
 
 import {ProcessStartRequest, ProcessStartResponse} from '../types/index';
 
@@ -101,9 +100,9 @@ export interface IProcessEngineClient {
   ): Promise<void>;
 
   // ExternalTasks
-  subscribeToExternalTasksWithTopic<TPayload>(
+  subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: HandleExternalTaskAction<TPayload>,
+    handleAction: HandleExternalTaskAction<TPayload, TResult>,
     maxTasks?: number,
     timeout?: number,
   ): IExternalTaskWorker;

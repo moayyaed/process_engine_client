@@ -494,9 +494,9 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
   }
 
   // ExternalTasks
-  public subscribeToExternalTasksWithTopic<TPayload>(
+  public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: HandleExternalTaskAction<TPayload>,
+    handleAction: HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
   ): IExternalTaskWorker {
@@ -509,7 +509,7 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
 
     const externalTaskWorker = new ExternalTaskWorker(externalTaskHttpClient);
 
-    externalTaskWorker.waitForAndHandle<TPayload>(this.identity, topic, maxTasks, timeout, handleAction);
+    externalTaskWorker.subscribeToExternalTasksWithTopic<TPayload, TResult>(this.identity, topic, maxTasks, timeout, handleAction);
 
     return externalTaskWorker;
   }

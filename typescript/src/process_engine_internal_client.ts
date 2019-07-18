@@ -216,15 +216,15 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
   }
 
   // ExternalTasks
-  public subscribeToExternalTasksWithTopic<TPayload>(
+  public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: HandleExternalTaskAction<TPayload>,
+    handleAction: HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
   ): IExternalTaskWorker {
     const externalTaskWorker = new ExternalTaskWorker(this.externalTaskApiService);
 
-    externalTaskWorker.waitForAndHandle<TPayload>(this.identity, topic, maxTasks, timeout, handleAction);
+    externalTaskWorker.subscribeToExternalTasksWithTopic<TPayload, TResult>(this.identity, topic, maxTasks, timeout, handleAction);
 
     return externalTaskWorker;
   }

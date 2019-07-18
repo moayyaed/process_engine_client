@@ -32,12 +32,12 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
     return this._workerId;
   }
 
-  public async waitForAndHandle<TPayload>(
+  public async subscribeToExternalTasksWithTopic<TPayload, TResult>(
     identity: IIdentity,
     topic: string,
     maxTasks: number,
     longpollingTimeout: number,
-    handleAction: HandleExternalTaskAction<TPayload>,
+    handleAction: HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
     this.pollingIsActive = true;
@@ -94,10 +94,10 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
     }
   }
 
-  private async executeExternalTask<TPayload>(
+  private async executeExternalTask<TPayload, TResult>(
     identity: IIdentity,
     externalTask: ExternalTask<TPayload>,
-    handleAction: HandleExternalTaskAction<TPayload>,
+    handleAction: HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
     try {
@@ -109,7 +109,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
       const result = await handleAction(externalTask.payload, externalTask);
       clearInterval(interval);
 
-      await result.sendToExternalTaskApi(this.externalTaskApi, identity, this.workerId);
+      this.externalTaskApi.finishExternalTask(identity, this.workerId, externalTask.id, result);
     } catch (error) {
       logger.error('Failed to execute ExternalTask!', error.message, error.stack);
       await this.externalTaskApi.handleServiceError(identity, this.workerId, externalTask.id, error.message, '');
