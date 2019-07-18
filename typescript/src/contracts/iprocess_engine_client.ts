@@ -5,6 +5,9 @@ import {HandleExternalTaskAction} from '@process-engine/external_task_api_contra
 
 import {IExternalTaskWorker} from './iexternal_task_worker';
 
+import {ProcessStartRequest} from './process_start_request';
+import {ProcessStartResponse} from './process_start_response';
+
 export interface IProcessEngineClient {
 
   // Process models and instances
@@ -14,13 +17,13 @@ export interface IProcessEngineClient {
 
   getProcessModelByProcessInstanceId(processInstanceId: string): Promise<DataModels.ProcessModels.ProcessModel>;
 
-  startProcessInstance(
+  startProcessInstance<TRequestPayload, TResponsePayload>(
     processModelId: string,
     startEventId: string,
-    payload?: DataModels.ProcessModels.ProcessStartRequestPayload,
+    requestParams?: ProcessStartRequest<TRequestPayload>,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-  ): Promise<DataModels.ProcessModels.ProcessStartResponsePayload>;
+  ): Promise<ProcessStartResponse<TResponsePayload>>;
 
   getResultForProcessModelInCorrelation(correlationId: string, processModelId: string): Promise<Array<DataModels.CorrelationResult>>;
 

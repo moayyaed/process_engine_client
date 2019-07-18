@@ -20,6 +20,8 @@ import {
   IDisposable,
   IExternalTaskWorker,
   IProcessEngineClient,
+  ProcessStartRequest,
+  ProcessStartResponse,
 } from './contracts/index';
 import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker/index';
 
@@ -100,13 +102,29 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
     return httpResponse.result;
   }
 
-  public async startProcessInstance(
+  public async startProcessInstance<TRequestPayload, TResponsePayload>(
     processModelId: string,
     startEventId: string,
-    payload?: DataModels.ProcessModels.ProcessStartRequestPayload,
+    requestParams?: ProcessStartRequest<TRequestPayload>,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-  ): Promise<DataModels.ProcessModels.ProcessStartResponsePayload> {
+  ): Promise<ProcessStartResponse<TResponsePayload>> {
+
+    type InternalRequestPayload = DataModels.ProcessModels.ProcessStartRequestPayload;
+    type InternalResponsePaylad = DataModels.ProcessModels.ProcessStartResponsePayload;
+
+    const buildPayloadForProcessEngine = (): InternalRequestPayload => {
+      const internalPayload = new DataModels.ProcessModels.ProcessStartRequestPayload();
+      internalPayload.callerId = requestParams.parentProcessInstanceId;
+      internalPayload.correlationId = requestParams.correlationId;
+      internalPayload.inputValues = requestParams.payload;
+
+      return internalPayload;
+    };
+
+    const internalPayload = requestParams !== undefined
+      ? buildPayloadForProcessEngine()
+      : {} as DataModels.ProcessModels.ProcessStartRequestPayload;
 
     const url = this.buildStartProcessInstanceUrl(processModelId, startCallbackType, endEventId, startEventId);
 
@@ -114,10 +132,16 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
 
     const httpResponse = await this
       .httpClient
-      // eslint-disable-next-line max-len
-      .post<DataModels.ProcessModels.ProcessStartRequestPayload, DataModels.ProcessModels.ProcessStartResponsePayload>(url, payload, requestAuthHeaders);
+      .post<InternalRequestPayload, InternalResponsePaylad>(url, internalPayload, requestAuthHeaders);
 
-    return httpResponse.result;
+    const publicResponse = new ProcessStartResponse<TResponsePayload>(
+      httpResponse.result.correlationId,
+      httpResponse.result.processInstanceId,
+      httpResponse.result.endEventId,
+      httpResponse.result.tokenPayload as any, // TODO: tokenPayload is of type string!?
+    );
+
+    return publicResponse;
   }
 
   public async getResultForProcessModelInCorrelation(

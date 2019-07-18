@@ -8,7 +8,7 @@ import {
 } from '@process-engine/consumer_api_contracts';
 import {IExternalTaskApi} from '@process-engine/external_task_api_contracts';
 
-import {HandleExternalTaskAction, IExternalTaskWorker, IProcessEngineClient} from './contracts/index';
+import {HandleExternalTaskAction, IExternalTaskWorker, IProcessEngineClient, ProcessStartRequest, ProcessStartResponse} from './contracts/index';
 import {ExternalTaskWorker} from './external_task_worker/index';
 
 export class ProcessEngineInternalClient implements IProcessEngineClient {
@@ -41,14 +41,39 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
     return this.consumerApiService.getProcessModelByProcessInstanceId(this.identity, processInstanceId);
   }
 
-  public async startProcessInstance(
+  public async startProcessInstance<TRequestPayload, TResponsePayload>(
     processModelId: string,
     startEventId: string,
-    payload?: DataModels.ProcessModels.ProcessStartRequestPayload,
+    requestParams?: ProcessStartRequest<TRequestPayload>,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-  ): Promise<DataModels.ProcessModels.ProcessStartResponsePayload> {
-    return this.consumerApiService.startProcessInstance(this.identity, processModelId, payload, startCallbackType, startEventId, endEventId);
+  ): Promise<ProcessStartResponse<TResponsePayload>> {
+
+    const buildPayloadForProcessEngine = (): DataModels.ProcessModels.ProcessStartRequestPayload => {
+      const internalPayload = new DataModels.ProcessModels.ProcessStartRequestPayload();
+      internalPayload.callerId = requestParams.parentProcessInstanceId;
+      internalPayload.correlationId = requestParams.correlationId;
+      internalPayload.inputValues = requestParams.payload;
+
+      return internalPayload;
+    };
+
+    const internalPayload = requestParams !== undefined
+      ? buildPayloadForProcessEngine()
+      : {} as DataModels.ProcessModels.ProcessStartRequestPayload;
+
+    const response = await this
+      .consumerApiService
+      .startProcessInstance(this.identity, processModelId, internalPayload, startCallbackType, startEventId, endEventId);
+
+    const publicResponse = new ProcessStartResponse<TResponsePayload>(
+      response.correlationId,
+      response.processInstanceId,
+      response.endEventId,
+      response.tokenPayload as any, // TODO: tokenPayload is of type string!?
+    );
+
+    return publicResponse;
   }
 
   public async getResultForProcessModelInCorrelation(
