@@ -142,7 +142,7 @@ describe('ExternalTaskWorker.executeExternalTask', (): void => {
       should(errorWasCalled).be.false();
     });
 
-    it('Should pass a failed finished ExternalTask\'s error to handleServiceError.', async (): Promise<void> => {
+    it('Should pass a failed ExternalTask\'s error to handleServiceError.', async (): Promise<void> => {
 
       finishWasCalled = false;
       errorWasCalled = false;

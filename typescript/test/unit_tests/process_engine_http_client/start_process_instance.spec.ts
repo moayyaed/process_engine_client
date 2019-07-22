@@ -12,7 +12,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
 
   describe('Payload transformation', (): void => {
 
-    let payloadSentToConsumerApi;
+    let payloadSentToProcessEngine;
     let resultReceivedFromClient;
 
     before(async (): Promise<void> => {
@@ -26,7 +26,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
       const httpClientMock = new HttpClientMock(fixtures);
 
       httpClientMock.onCalledCallback = (url, payload, authHeaders): void => {
-        payloadSentToConsumerApi = payload;
+        payloadSentToProcessEngine = payload;
       };
       const processEngineHttpClient = new ProcessEngineHttpClient(sampleUrl);
       processEngineHttpClient.httpClient = httpClientMock as any;
@@ -40,10 +40,10 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
       resultReceivedFromClient = await processEngineHttpClient.startProcessInstance('processModelId', 'startEventId', samplePayload);
     });
 
-    it('Should correctly transform the provided payload into the format used by the ConsumerApi.', async (): Promise<void> => {
+    it('Should correctly transform the provided payload into the format used by the ProcessEngine.', async (): Promise<void> => {
       const expectedInputValues = {sample: 'requestPayload'};
 
-      should(payloadSentToConsumerApi.inputValues).be.eql(expectedInputValues);
+      should(payloadSentToProcessEngine.inputValues).be.eql(expectedInputValues);
     });
 
     it('Should correctly parse the received response into the format employed by the client', async (): Promise<void> => {
@@ -71,7 +71,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
     const processEngineHttpClient = new ProcessEngineHttpClient(sampleUrl);
     processEngineHttpClient.httpClient = httpClientMock as any;
 
-    it('Should pass the correct identity to the ConsumerApi.', async (): Promise<void> => {
+    it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
       await processEngineHttpClient.startProcessInstance('processModelId', 'startEventId');
 
@@ -98,7 +98,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
     const processEngineHttpClient = new ProcessEngineHttpClient(sampleUrl, samplIdentity);
     processEngineHttpClient.httpClient = httpClientMock as any;
 
-    it('Should pass the correct identity to the ConsumerApi.', async (): Promise<void> => {
+    it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
       await processEngineHttpClient.startProcessInstance('processModelId', 'startEventId');
 

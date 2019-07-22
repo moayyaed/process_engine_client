@@ -34,7 +34,7 @@ describe('ExternalTaskWorker.subscribeToExternalTasksWithTopic', (): void => {
     externalTaskWorker = undefined;
   });
 
-  it('Should poll for ExternalTasks interval regularly.', async (): Promise<void> => {
+  it('Should poll for ExternalTasks regularly, using the given interval.', async (): Promise<void> => {
 
     externalTaskWorker['pollingInterval'] = 100;
 
