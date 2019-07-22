@@ -1,0 +1,7 @@
+{
+  "extends": "@essential-projects/eslint-config",
+  "rules": {
+    "no-plusplus": "off",
+    "@typescript-eslint/no-explicit-any": "off"
+  }
+}
