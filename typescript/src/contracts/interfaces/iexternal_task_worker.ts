@@ -1,5 +1,6 @@
 import {IIdentity} from '@essential-projects/iam_contracts';
-import {ExternalTask} from '@process-engine/external_task_api_contracts';
+
+import {HandleExternalTaskAction} from '../types/index';
 
 /**
  * Interface for implementing the ExternalTaskWorker used by the ProcessEngineClient.
@@ -42,5 +43,3 @@ export interface IExternalTaskWorker {
    */
   stop(): void;
 }
-
-export type HandleExternalTaskAction<TPayload, TResult> = (payload: TPayload, externalTask?: ExternalTask<TPayload>) => Promise<TResult>;

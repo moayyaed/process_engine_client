@@ -7,11 +7,11 @@ import {
   IExternalTaskApi,
 } from '@process-engine/external_task_api_contracts';
 
-import {HandleExternalTaskAction, IExternalTaskWorker} from '../contracts/index';
+import {Interfaces, Types} from '../contracts/index';
 
 const logger: Logger = Logger.createLogger('processengine:external_task:worker');
 
-export class ExternalTaskWorker implements IExternalTaskWorker {
+export class ExternalTaskWorker implements Interfaces.IExternalTaskWorker {
 
   // eslint-disable-next-line @typescript-eslint/member-naming
   private readonly _workerId = uuid.v4();
@@ -38,7 +38,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
     topic: string,
     maxTasks: number,
     longpollingTimeout: number,
-    handleAction: HandleExternalTaskAction<TPayload, TResult>,
+    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
     this.pollingIsActive = true;
@@ -98,7 +98,7 @@ export class ExternalTaskWorker implements IExternalTaskWorker {
   private async executeExternalTask<TPayload, TResult>(
     identity: IIdentity,
     externalTask: ExternalTask<TPayload>,
-    handleAction: HandleExternalTaskAction<TPayload, TResult>,
+    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
     let extendLocKInterval: NodeJS.Timeout;

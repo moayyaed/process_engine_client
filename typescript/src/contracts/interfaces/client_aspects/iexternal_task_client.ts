@@ -1,4 +1,6 @@
-import {HandleExternalTaskAction, IExternalTaskWorker} from '../iexternal_task_worker';
+import {IExternalTaskWorker} from '../iexternal_task_worker';
+
+import {HandleExternalTaskAction} from '../../types/index';
 
 export interface IExternalTaskClient {
 

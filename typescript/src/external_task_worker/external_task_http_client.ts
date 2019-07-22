@@ -13,11 +13,11 @@ import {
   restSettings,
 } from '@process-engine/external_task_api_contracts';
 
-import {HttpClientConfig} from '../contracts/index';
+import {Types} from '../contracts/index';
 
 export class ExternalTaskHttpClient implements IExternalTaskApi {
 
-  public config: HttpClientConfig;
+  public config: Types.HttpClientConfig;
 
   private baseUrl = 'api/external_task/v1';
 

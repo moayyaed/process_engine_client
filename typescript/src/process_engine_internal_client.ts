@@ -8,16 +8,10 @@ import {
 } from '@process-engine/consumer_api_contracts';
 import {IExternalTaskApi} from '@process-engine/external_task_api_contracts';
 
-import {
-  HandleExternalTaskAction,
-  IExternalTaskWorker,
-  IProcessEngineClient,
-  ProcessStartRequest,
-  ProcessStartResponse,
-} from './contracts/index';
+import {Interfaces, Types} from './contracts/index';
 import {ExternalTaskWorker} from './external_task_worker/index';
 
-export class ProcessEngineInternalClient implements IProcessEngineClient {
+export class ProcessEngineInternalClient implements Interfaces.IProcessEngineClient {
 
   private readonly consumerApiService: IConsumerApi;
   private readonly externalTaskApiService: IExternalTaskApi;
@@ -50,10 +44,10 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
   public async startProcessInstance<TRequestPayload, TResponsePayload>(
     processModelId: string,
     startEventId: string,
-    requestParams?: ProcessStartRequest<TRequestPayload>,
+    requestParams?: Types.ProcessStartRequest<TRequestPayload>,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-  ): Promise<ProcessStartResponse<TResponsePayload>> {
+  ): Promise<Types.ProcessStartResponse<TResponsePayload>> {
 
     const buildPayloadForProcessEngine = (): DataModels.ProcessModels.ProcessStartRequestPayload => {
       const internalPayload = new DataModels.ProcessModels.ProcessStartRequestPayload();
@@ -72,7 +66,7 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
       .consumerApiService
       .startProcessInstance(this.identity, processModelId, internalPayload, startCallbackType, startEventId, endEventId);
 
-    const publicResponse = new ProcessStartResponse<TResponsePayload>(
+    const publicResponse = new Types.ProcessStartResponse<TResponsePayload>(
       response.correlationId,
       response.processInstanceId,
       response.endEventId,
@@ -218,10 +212,10 @@ export class ProcessEngineInternalClient implements IProcessEngineClient {
   // ExternalTasks
   public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: HandleExternalTaskAction<TPayload, TResult>,
+    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): IExternalTaskWorker {
+  ): Interfaces.IExternalTaskWorker {
     const externalTaskWorker = new ExternalTaskWorker(this.externalTaskApiService);
 
     externalTaskWorker.subscribeToExternalTasksWithTopic<TPayload, TResult>(this.identity, topic, maxTasks, timeout, handleAction);

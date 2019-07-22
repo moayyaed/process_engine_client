@@ -14,14 +14,7 @@ import {
   socketSettings,
 } from '@process-engine/consumer_api_contracts';
 
-import {
-  HandleExternalTaskAction,
-  IDisposable,
-  IExternalTaskWorker,
-  IProcessEngineClient,
-  ProcessStartRequest,
-  ProcessStartResponse,
-} from './contracts/index';
+import {Interfaces, Types} from './contracts/index';
 import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker/index';
 
 /**
@@ -31,7 +24,7 @@ import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker
  */
 type SubscriptionCallbackAssociation = {[subscriptionId: string]: Function};
 
-export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposable {
+export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient, Interfaces.IDisposable {
 
   private readonly baseConsumerApiUrl = 'api/consumer/v1';
   private readonly processEngineUrl: string;
@@ -104,10 +97,10 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
   public async startProcessInstance<TRequestPayload, TResponsePayload>(
     processModelId: string,
     startEventId: string,
-    requestParams?: ProcessStartRequest<TRequestPayload>,
+    requestParams?: Types.ProcessStartRequest<TRequestPayload>,
     startCallbackType?: DataModels.ProcessModels.StartCallbackType,
     endEventId?: string,
-  ): Promise<ProcessStartResponse<TResponsePayload>> {
+  ): Promise<Types.ProcessStartResponse<TResponsePayload>> {
 
     type InternalRequestPayload = DataModels.ProcessModels.ProcessStartRequestPayload;
     type InternalResponsePaylad = DataModels.ProcessModels.ProcessStartResponsePayload;
@@ -133,7 +126,7 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
       .httpClient
       .post<InternalRequestPayload, InternalResponsePaylad>(url, internalPayload, requestAuthHeaders);
 
-    const publicResponse = new ProcessStartResponse<TResponsePayload>(
+    const publicResponse = new Types.ProcessStartResponse<TResponsePayload>(
       httpResponse.result.correlationId,
       httpResponse.result.processInstanceId,
       httpResponse.result.endEventId,
@@ -496,10 +489,10 @@ export class ProcessEngineHttpClient implements IProcessEngineClient, IDisposabl
   // ExternalTasks
   public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: HandleExternalTaskAction<TPayload, TResult>,
+    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): IExternalTaskWorker {
+  ): Interfaces.IExternalTaskWorker {
 
     const externalTaskHttpClient = new ExternalTaskHttpClient();
     externalTaskHttpClient.config = {
