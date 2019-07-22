@@ -12,9 +12,6 @@ namespace ProcessEngineClient
     using ProcessEngine.ExternalTaskAPI.Client;
     using ProcessEngine.ExternalTaskAPI.Contracts;
 
-    /// <summary>
-    /// Client for interact with the process-engine
-    /// </summary>
     public class ProcessEngineClient
     {
         private HttpClient HttpClient { get; }
@@ -25,20 +22,11 @@ namespace ProcessEngineClient
 
         private IExternalTaskAPI ExternalTaskApi { get; }
 
-        /// <summary>
-        /// Create a new instance for the given url.
-        /// </summary>
-        /// <param name="url">The url for accessing the process-engine client api.</param>
         public ProcessEngineClient(string url)
             : this(url, Identity.DefaultIdentity)
         {
         }
 
-        /// <summary>
-        /// Create a new instance for the given url.
-        /// </summary>
-        /// <param name="url">The url for accessing the process-engine client api.</param>
-        /// <param name="identity">The identity to connect the process-engine with.</param>
         public ProcessEngineClient(string url, Identity identity)
         {
             this.HttpClient = new HttpClient();
@@ -50,13 +38,6 @@ namespace ProcessEngineClient
             this.ExternalTaskApi = new ExternalTaskApiClientService(this.HttpClient);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="processModelId"></param>
-        /// <param name="startEventId"></param>
-        /// <param name="endEventId"></param>
-        /// <returns></returns>
         public async Task<ProcessStartResponse<object>> StartProcessInstance(
             string processModelId,
             string startEventId,
@@ -67,14 +48,6 @@ namespace ProcessEngineClient
             return await this.StartProcessInstance<object, object>(processModelId, startEventId, request, endEventId);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="processModelId"></param>
-        /// <param name="startEventId"></param>
-        /// <param name="endEventId"></param>
-        /// <typeparam name="TResponsePayload"></typeparam>
-        /// <returns></returns>
         public async Task<ProcessStartResponse<TResponsePayload>> StartProcessInstance<TResponsePayload>(
             string processModelId,
             string startEventId,
@@ -86,16 +59,6 @@ namespace ProcessEngineClient
             return await this.StartProcessInstance<object, TResponsePayload>(processModelId, startEventId, request, endEventId);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="processModelId"></param>
-        /// <param name="startEventId"></param>
-        /// <param name="request"></param>
-        /// <param name="endEventId"></param>
-        /// <typeparam name="TRequestPayload"></typeparam>
-        /// <typeparam name="TResponsePayload"></typeparam>
-        /// <returns></returns>
         public async Task<ProcessStartResponse<TResponsePayload>> StartProcessInstance<TRequestPayload, TResponsePayload>(
             string processModelId,
             string startEventId,
@@ -137,15 +100,17 @@ namespace ProcessEngineClient
             return response;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="topic"></param>
-        /// <param name="maxTasks"></param>
-        /// <param name="timeout"></param>
-        /// <param name="handleAction"></param>
-        /// <typeparam name="TPayload"></typeparam>
-        /// <returns></returns>
+        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload>(
+            string topic,
+            HandleExternalTaskAction<TPayload> handleAction)
+        where TPayload : new()
+        {
+            var maxTasks = 10;
+            var timeout = 1000;
+
+            return this.SubscribeToExternalTasksWithTopic<TPayload>(topic, maxTasks, timeout, handleAction);
+        }
+
         public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload>(
             string topic,
             int maxTasks,
@@ -158,24 +123,6 @@ namespace ProcessEngineClient
             externalTaskWorker.WaitForHandle(this.Identity.ExternalTaskIdentity, topic, maxTasks, timeout, handleAction);
 
             return externalTaskWorker;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="topic"></param>
-        /// <param name="handleAction"></param>
-        /// <typeparam name="TPayload"></typeparam>
-        /// <returns></returns>
-        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload>(
-            string topic,
-            HandleExternalTaskAction<TPayload> handleAction)
-        where TPayload : new()
-        {
-            var maxTasks = 10;
-            var timeout = 1000;
-
-            return this.SubscribeToExternalTasksWithTopic<TPayload>(topic, maxTasks, timeout, handleAction);
         }
     }
 }
