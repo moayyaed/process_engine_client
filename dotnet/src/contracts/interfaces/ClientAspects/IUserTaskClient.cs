@@ -16,6 +16,13 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         Task<UserTaskList> GetSuspendedUserTasksForProcessModel(string processModelId);
 
         /// <summary>
+        /// Retrieves a list of all suspended UserTasks belonging to the given ProcessInstance.
+        /// </summary>
+        /// <returns>The fetched UserTasks.</returns>
+        /// <param name="processInstanceId">The ID of the ProcessInstance for which to find UserTasks.</param>
+        Task<UserTaskList> GetSuspendedUserTasksForProcessInstance(string processInstanceId);
+
+        /// <summary>
         /// Retrieves a list of all suspended UserTasks belonging to a specific Correlation.
         /// </summary>
         /// <returns>The fetched UserTasks.</returns>

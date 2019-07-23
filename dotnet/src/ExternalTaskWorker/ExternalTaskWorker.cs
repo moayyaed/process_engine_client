@@ -126,7 +126,7 @@ namespace ProcessEngine.Client
                 {
                     Console.WriteLine(exception);
 
-                    // Returning an empty Array here, since "waitForAndHandle" already implements a timeout, in case no tasks are available for processing.
+                    // Returning an empty List here, since "waitForAndHandle" already implements a timeout, in case no tasks are available for processing.
                     // No need to do that twice.
                     return new List<ExternalTask<TPayload>>();
                 }
