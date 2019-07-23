@@ -17,7 +17,7 @@ namespace ProcessEngine.Client
 
     using ProcessEngine.Client.Contracts;
 
-  public class ProcessEngineClient
+    public class ProcessEngineClient
     {
         private static IIdentity DummyIdentity = new Identity() {
             UserId = "ZHVtbXlfdG9rZW4=",

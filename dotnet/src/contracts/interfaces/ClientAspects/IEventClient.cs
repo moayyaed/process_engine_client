@@ -1,9 +1,7 @@
 namespace ProcessEngine.Client.Contracts.ClientAspects
 {
-    using System;
     using System.Threading.Tasks;
 
-    using EssentialProjects.IAM.Contracts;
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
     using ProcessEngine.ConsumerAPI.Contracts.Exceptions;
 
@@ -17,7 +15,6 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Retrieves a list of all triggerable events belonging to an instance
         /// of a specific ProcessModel.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="processModelId">
         /// The ID of the ProcessModel for which to retrieve the events.
         /// </param>
@@ -31,13 +28,12 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the ProcessModel could not be found.
         /// </exception>
-        Task<EventList> GetEventsForProcessModel(IIdentity identity, string processModelId);
+        Task<EventList> GetSuspendedEventsForProcessModel(string processModelId);
 
         /// <summary>
         /// Retrieves a list of all triggerable events belonging to an instance
         /// of a specific ProcessModel.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="correlationId">
         /// The ID of the Correlation for which to retrieve the events.
         /// </param>
@@ -51,13 +47,12 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the Correlation could not be found.
         /// </exception>
-        Task<EventList> GetEventsForCorrelation(IIdentity identity, string correlationId);
+        Task<EventList> GetSuspendedEventsForCorrelation(string correlationId);
 
         /// <summary>
         /// Retrieves a list of all triggerable events belonging to an instance
         /// of a specific ProcessModel within a Correlation.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="processModelId">
         /// The ID of the ProcessModel for which to retrieve the events.
         /// </param>
@@ -74,12 +69,11 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the ProcessModel or the Correlation could not be found.
         /// </exception>
-        Task<EventList> GetEventsForProcessModelInCorrelation(IIdentity identity, string processModelId, string correlationId);
+        Task<EventList> GetSuspendedEventsForProcessModelInCorrelation(string processModelId, string correlationId);
 
         /// <summary>
         /// Triggers a message event.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="messageName">The name of the message to trigger.</param>
         /// <returns>
         /// A task that is finished once the event has been triggered.
@@ -88,12 +82,11 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Thrown when the identity has insufficient rights to perform the
         /// operation.
         /// </exception>
-        Task TriggerMessageEvent(IIdentity identity, string messageName);
+        Task TriggerMessageEvent(string messageName);
 
         /// <summary>
         /// Triggers a message event.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="messageName">The name of the message to trigger.</param>
         /// <param name="payload">The payload with which to trigger the message.</param>
         /// <returns>
@@ -103,12 +96,11 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Thrown when the identity has insufficient rights to perform the
         /// operation.
         /// </exception>
-        Task TriggerMessageEvent(IIdentity identity, string messageName, object payload);
+        Task TriggerMessageEvent<TPayload>(string messageName, TPayload payload);
 
         /// <summary>
         /// Triggers a signal event.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="signalName">The name of the signal to trigger.</param>
         /// <returns>
         /// A task that is finished once the event has been triggered.
@@ -117,12 +109,11 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Thrown when the identity has insufficient rights to perform the
         /// operation.
         /// </exception>
-        Task TriggerSignalEvent(IIdentity identity, string signalName);
+        Task TriggerSignalEvent(string signalName);
 
         /// <summary>
         /// Triggers a signal event.
         /// </summary>
-        /// <param name="identity">The requesting users identity.</param>
         /// <param name="signalName">The name of the signal to trigger.</param>
         /// <param name="payload">The payload with which to trigger the signal.</param>
         /// <returns>
@@ -132,7 +123,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Thrown when the identity has insufficient rights to perform the
         /// operation.
         /// </exception>
-        Task TriggerSignalEvent(IIdentity identity, string signalName, object payload);
+        Task TriggerSignalEvent<TPayload>(string signalName, TPayload payload);
     }
 
 }
