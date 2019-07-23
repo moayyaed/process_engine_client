@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts.ClientAspects
+namespace ProcessEngine.Client.Contracts.ClientAspects
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -10,7 +10,7 @@ namespace ProcessEngineClient.Contracts.ClientAspects
     /// <summary>
     /// The IProcessModelClient is used to retreive ProcessModels and start ProcessInstances.
     /// </summary>
-    internal interface IProcessModelClient
+    public interface IProcessModelClient
     {
         /// <summary>
         /// Starts an instance for a given ProcessDefinition. Process variables and correlation id may be supplied in the request payload.

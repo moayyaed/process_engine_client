@@ -1,4 +1,4 @@
-namespace ProcessEngineClient
+namespace ProcessEngine.Client
 {
     using System;
     using System.Net.Http;
@@ -11,7 +11,7 @@ namespace ProcessEngineClient
 
     using EssentialProjects.IAM.Contracts;
 
-    using ProcessEngineClient.Contracts;
+    using ProcessEngine.Client.Contracts;
 
     public class ProcessEngineClient
     {

@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts.ClientAspects
+namespace ProcessEngine.Client.Contracts.ClientAspects
 {
     using System;
     using System.Threading.Tasks;
@@ -11,7 +11,7 @@ namespace ProcessEngineClient.Contracts.ClientAspects
     /// The IEventClient is used to retrieve waiting events and to trigger
     /// them.
     /// </summary>
-    internal  interface IEventClient
+    public  interface IEventClient
     {
         /// <summary>
         /// Retrieves a list of all triggerable events belonging to an instance

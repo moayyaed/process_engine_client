@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts.ClientAspects
+namespace ProcessEngine.Client.Contracts.ClientAspects
 {
     using System.Threading.Tasks;
     using EssentialProjects.IAM.Contracts;
@@ -7,7 +7,7 @@ namespace ProcessEngineClient.Contracts.ClientAspects
     /// <summary>
     /// The IUserTaskClient is used to retreive and manage UserTasks.
     /// </summary>
-    internal interface IUserTaskClient
+    public interface IUserTaskClient
     {
         /// <summary>
         /// Retrieves a list of all suspended UserTasks belonging to an instance of a specific ProcessModel.

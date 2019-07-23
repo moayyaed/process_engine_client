@@ -1,6 +1,6 @@
-﻿namespace ProcessEngineClient.Contracts
+﻿namespace ProcessEngine.Client.Contracts
 {
-    using ProcessEngineClient.Contracts.ClientAspects;
+    using ProcessEngine.Client.Contracts.ClientAspects;
 
     /// <summary>
     /// API for starting and managing BMPN processes.

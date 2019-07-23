@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts
+namespace ProcessEngine.Client.Contracts
 {
     public class ProcessStartRequest<TPayload>
         where TPayload: new()

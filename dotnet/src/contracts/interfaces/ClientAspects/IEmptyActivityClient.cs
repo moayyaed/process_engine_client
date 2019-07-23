@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts.ClientAspects
+namespace ProcessEngine.Client.Contracts.ClientAspects
 {
     using System.Threading.Tasks;
 
@@ -10,7 +10,7 @@ namespace ProcessEngineClient.Contracts.ClientAspects
     /// The IEventColient is used to retrieve waiting events and to trigger
     /// them.
     /// </summary>
-    internal interface IEmptyActivityClient
+    public interface IEmptyActivityClient
     {
         /// <summary>
         /// Retrieves a list of all suspended EmptyActivities belonging to an instance of a specific ProcessModel.

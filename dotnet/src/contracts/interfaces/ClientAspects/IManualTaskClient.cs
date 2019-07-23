@@ -1,4 +1,4 @@
-namespace ProcessEngineClient.Contracts.ClientAspects
+namespace ProcessEngine.Client.Contracts.ClientAspects
 {
     using System.Threading.Tasks;
     using EssentialProjects.IAM.Contracts;
@@ -7,7 +7,7 @@ namespace ProcessEngineClient.Contracts.ClientAspects
     /// <summary>
     /// The IManualTaskClient is used to retreive and manage ManualTasks.
     /// </summary>
-    internal interface IManualTaskClient
+    public interface IManualTaskClient
     {
         /// <summary>
         /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel.

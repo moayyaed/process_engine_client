@@ -1,6 +1,5 @@
-namespace ProcessEngineClient.Contracts
+namespace ProcessEngine.Client.Contracts
 {
-    using System;
     using System.Threading.Tasks;
 
     using ProcessEngine.ExternalTaskAPI.Contracts;
@@ -10,7 +9,7 @@ namespace ProcessEngineClient.Contracts
     /// <summary>
     /// Definition of the HandleExternalTask Callback.
     /// </summary>
-    public delegate Task<IExternalTaskResult> HandleExternalTaskAction<TPayload>(ExternalTask<TPayload> externalTask);
+    public delegate Task<IExternalTaskResult> ExtendedHandleExternalTaskAction<TPayload, TResult>(TPayload payload, ExternalTask<TPayload> externalTask);
 
     /// <summary>
     /// Periodically fetches, locks and processes ExternalTasks for a given topic.
@@ -47,13 +46,15 @@ namespace ProcessEngineClient.Contracts
         /// <param name="handleAction">
         /// The function for processing the ExternalTasks.
         /// </param>
-        Task SubscribeToExternalTasksWithTopic<TPayload>(
+        Task SubscribeToExternalTasksWithTopic<TPayload, TResult>(
             IIdentity identity,
             string topic,
             int maxTasks,
             int longpollingTimeout,
-            HandleExternalTaskAction<TPayload> handleAction
-          ) where TPayload : new();
+            ExtendedHandleExternalTaskAction<TPayload, TResult> handleAction
+        )
+        where TPayload : new()
+        where TResult : new();
 
         /// <summary>
         /// Tells the worker to stop polling for and handling ExternalTasks.
