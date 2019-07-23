@@ -1,9 +1,5 @@
 namespace ProcessEngineClient
 {
-    using global::ProcessEngine.ConsumerAPI.Client;
-    using global::ProcessEngine.ConsumerAPI.Contracts;
-    using global::ProcessEngine.ConsumerAPI.Contracts.DataModel;
-
     public class ProcessStartRequest<TPayload>
         where TPayload: new()
     {
@@ -11,11 +7,14 @@ namespace ProcessEngineClient
             this.Payload = new TPayload();
         }
 
-        public ProcessStartRequest(string correlationId, string parentProcessInstanceId, TPayload payload = new TPayload())
+        public ProcessStartRequest(string correlationId, string parentProcessInstanceId, TPayload payload = default(TPayload))
         {
             this.CorrelationId = correlationId;
             this.ParentProcessInstanceId = parentProcessInstanceId;
-            this.Payload = payload;
+
+            this.Payload = payload == null
+                ? new TPayload()
+                : payload;
         }
 
         public string CorrelationId { get; private set; }

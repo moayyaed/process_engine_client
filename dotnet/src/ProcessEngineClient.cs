@@ -5,22 +5,18 @@ namespace ProcessEngineClient
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    using ProcessEngine.ConsumerAPI.Client;
     using ProcessEngine.ConsumerAPI.Contracts;
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
-    using ProcessEngine.ExternalTaskAPI.Client;
     using ProcessEngine.ExternalTaskAPI.Contracts;
+
+    using EssentialProjects.IAM.Contracts;
 
     public class ProcessEngineClient
     {
         private HttpClient HttpClient { get; }
 
-        private Identity Identity { get; set; }
-
-        private ConsumerApiClientService ConsumerApiClient { get; }
-
-        private IExternalTaskAPI ExternalTaskApi { get; }
+        private IIdentity Identity { get; set; }
 
         public ProcessEngineClient(string url)
             : this(url, Identity.DefaultIdentity)
@@ -32,20 +28,6 @@ namespace ProcessEngineClient
             this.HttpClient = new HttpClient();
             this.HttpClient.BaseAddress = new Uri(url);
             this.Identity = identity;
-
-            this.ConsumerApiClient = new ConsumerApiClientService(this.HttpClient);
-
-            this.ExternalTaskApi = new ExternalTaskApiClientService(this.HttpClient);
-        }
-
-        public async Task<ProcessStartResponse<object>> StartProcessInstance(
-            string processModelId,
-            string startEventId,
-            string endEventId = "")
-        {
-            var request = new ProcessStartRequest<object>();
-
-            return await this.StartProcessInstance<object, object>(processModelId, startEventId, request, endEventId);
         }
 
         public async Task<ProcessStartResponse<TResponsePayload>> StartProcessInstance<TResponsePayload>(
@@ -81,21 +63,15 @@ namespace ProcessEngineClient
                 startEventId,
                 payload,
                 callbackType,
-                endEventId);
+                endEventId
+            );
 
-            var response = new ProcessStartResponse<TResponsePayload>();
-            response.ProcessInstanceId = responsePayload.ProcessInstanceId;
-            response.CorrelationId = responsePayload.CorrelationId;
-            response.EndEventId = responsePayload.EndEventId;
-
-            try
-            {
-                response.Payload = (TResponsePayload)responsePayload.TokenPayload;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            var response = new ProcessStartResponse<TResponsePayload>(
+                responsePayload.ProcessInstanceId,
+                responsePayload.CorrelationId,
+                responsePayload.EndEventId,
+                (TResponsePayload)responsePayload.TokenPayload
+            );
 
             return response;
         }
