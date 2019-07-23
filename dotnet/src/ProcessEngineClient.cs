@@ -7,10 +7,11 @@ namespace ProcessEngineClient
 
     using ProcessEngine.ConsumerAPI.Contracts;
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
-
     using ProcessEngine.ExternalTaskAPI.Contracts;
 
     using EssentialProjects.IAM.Contracts;
+
+    using ProcessEngineClient.Contracts;
 
     public class ProcessEngineClient
     {
