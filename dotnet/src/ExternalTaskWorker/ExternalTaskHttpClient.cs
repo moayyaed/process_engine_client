@@ -1,4 +1,4 @@
-﻿namespace ProcessEngine.Client.ExternalTaskWorker
+﻿namespace ProcessEngine.Client
 {
     using System;
     using System.Collections.Generic;
@@ -16,16 +16,17 @@
 
     public class ExternalTaskHttpClient : IExternalTaskAPI
     {
-        private readonly HttpClient httpClient;
+        private HttpClient httpClient;
 
-        public ExternalTaskHttpClient(HttpClient httpClient)
+        public ExternalTaskHttpClient(string processEngineUrl)
         {
-            this.httpClient = httpClient;
-            this.ConfigureHttpClient();
+            this.ConfigureHttpClient(processEngineUrl);
         }
 
-        private void ConfigureHttpClient()
+        private void ConfigureHttpClient(string processEngineUrl)
         {
+            this.httpClient = new HttpClient();
+            this.httpClient.BaseAddress = new Uri(processEngineUrl);
             this.httpClient.DefaultRequestHeaders.Accept.Clear();
             this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }

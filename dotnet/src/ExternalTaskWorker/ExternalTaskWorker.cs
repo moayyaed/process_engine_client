@@ -1,4 +1,4 @@
-namespace ProcessEngine.Client.ExternalTaskWorker
+namespace ProcessEngine.Client
 {
     using System;
     using System.Collections.Generic;
