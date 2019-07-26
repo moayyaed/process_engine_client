@@ -23,7 +23,7 @@ namespace ProcessEngine.Client.Tests
         {
             var processModelId = "test_consumer_api_correlation_result";
             var payload = new ProcessStartRequest<object>();
-            var callbackType = StartCallbackType.CallbackOnProcessInstanceCreated;
+            var callbackType = StartCallbackType.CallbackOnProcessInstanceFinished;
 
             var processStartResponsePayload = await this
                 .fixture

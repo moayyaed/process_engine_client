@@ -447,7 +447,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.StartProcessInstance
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var url = $"{endpoint}?start_callback_type={startCallbackType}";
+            var url = $"{endpoint}?start_callback_type={(int)startCallbackType}";
 
             if (!String.IsNullOrEmpty(startEventId))
             {
