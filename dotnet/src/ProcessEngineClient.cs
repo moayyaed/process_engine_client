@@ -309,6 +309,71 @@ namespace ProcessEngine.Client
 
     #endregion
 
+#region "ManualTasks"
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessInstance(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationManualTasks
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnManualTasks;
+
+            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task FinishManualTask(string processInstanceId, string correlationId, string manualTaskInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.FinishManualTask
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.ManualTaskInstanceId, manualTaskInstanceId);
+
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+#endregion
+
 #region "Private Helper Functions"
 
         private string BuildStartProcessInstanceUrl(string processModelId, string startEventId, string endEventId, StartCallbackType startCallbackType)
