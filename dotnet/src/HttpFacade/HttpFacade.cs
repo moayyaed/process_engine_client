@@ -137,7 +137,7 @@ namespace ProcessEngine.Client
 
         public string ApplyBaseConsumerApiUrl(string url)
         {
-            return $"${ConsumerApiRestSettings.Endpoints.ConsumerAPI}${url}";
+            return $"{ConsumerApiRestSettings.Endpoints.ConsumerAPI}{url}";
         }
 
         public void SetAuthenticationHeader(IIdentity identity)

@@ -178,7 +178,7 @@ namespace ProcessEngine.Client
                 {
                     // This can happen, if the lock-extension was performed after the task was already finished.
                     // Since this isn't really an error, a warning suffices here.
-                    Console.WriteLine($"An error occured while trying to extend the lock for ExternalTask ${externalTask.Id}", error.Message, error.StackTrace);
+                    Console.WriteLine($"An error occured while trying to extend the lock for ExternalTask {externalTask.Id}", error.Message, error.StackTrace);
                 }
             }
     }

@@ -447,16 +447,16 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.StartProcessInstance
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var url = $"${endpoint}?start_callback_type=${startCallbackType}";
+            var url = $"{endpoint}?start_callback_type={startCallbackType}";
 
             if (!String.IsNullOrEmpty(startEventId))
             {
-                url = $"${url}&start_event_id=${startEventId}";
+                url = $"{url}&start_event_id={startEventId}";
             }
 
             if (startCallbackType == StartCallbackType.CallbackOnEndEventReached)
             {
-                url = $"${url}&end_event_id=${endEventId}";
+                url = $"{url}&end_event_id={endEventId}";
             }
 
             return url;
