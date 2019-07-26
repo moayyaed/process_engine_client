@@ -374,6 +374,72 @@ namespace ProcessEngine.Client
 
 #endregion
 
+#region "UserTasks"
+
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessInstance(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationUserTasks
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnUserTasks;
+
+            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task FinishUserTask(string processInstanceId, string correlationId, string userTaskInstanceId, UserTaskResult userTaskResult)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.FinishUserTask
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.UserTaskInstanceId, userTaskInstanceId);
+
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+#endregion
+
 #region "Private Helper Functions"
 
         private string BuildStartProcessInstanceUrl(string processModelId, string startEventId, string endEventId, StartCallbackType startCallbackType)
