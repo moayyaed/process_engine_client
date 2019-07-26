@@ -69,11 +69,16 @@ namespace ProcessEngine.Client
             return result;
         }
 
-        public async Task SendRequestAndExpectNoResult<TRequest>(HttpMethod method, string endpoint, TRequest content = default(TRequest))
+        public async Task SendRequestAndExpectNoResult(HttpMethod method, string endpoint)
+        {
+            await this.SendRequestAndExpectNoResult<object>(method, endpoint, null);
+        }
+
+        public async Task SendRequestAndExpectNoResult<TRequest>(HttpMethod method, string endpoint, TRequest payload)
         {
             var url = this.ApplyBaseConsumerApiUrl(endpoint);
 
-            var request = this.CreateRequestMessage<TRequest>(this.Identity, method, url, content);
+            var request = this.CreateRequestMessage<TRequest>(this.Identity, method, url, payload);
             var result = await this.HttpClient.SendAsync(request);
 
             if (!result.IsSuccessStatusCode)

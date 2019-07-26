@@ -1,6 +1,7 @@
 namespace ProcessEngine.Client
 {
     using System;
+    using System.Collections.Generic;
     using System.Net.Http;
     using System.Threading.Tasks;
 
@@ -11,10 +12,11 @@ namespace ProcessEngine.Client
     using ConsumerApiRestSettings = ProcessEngine.ConsumerAPI.Contracts.RestSettings;
 
     using ProcessEngine.Client.Contracts;
-  using System.Collections.Generic;
 
-  public class ProcessEngineClient: IProcessEngineClient
+    public class ProcessEngineClient: IProcessEngineClient
     {
+
+#region "Properties and Fields"
         private static IIdentity DummyIdentity = new Identity() {
             UserId = "ZHVtbXlfdG9rZW4=",
             Token = "dummy_token"
@@ -23,6 +25,10 @@ namespace ProcessEngine.Client
         private HttpFacade HttpFacade { get; }
 
         private IIdentity Identity { get; set; }
+
+#endregion
+
+#region "Constructors"
 
         public ProcessEngineClient(string url)
             : this(url, DummyIdentity)
@@ -34,6 +40,8 @@ namespace ProcessEngine.Client
             this.HttpFacade = new HttpFacade(url, identity);
             this.Identity = identity;
         }
+
+#endregion
 
 #region "Process Models"
 
@@ -136,6 +144,67 @@ namespace ProcessEngine.Client
             var result = await this.HttpFacade.SendRequestAndExpectResult<IEnumerable<CorrelationResult<TPayload>>>(HttpMethod.Get, endpoint);
 
             return result;
+        }
+
+#endregion
+
+#region "Events"
+
+        public async Task<IEnumerable<Event>> GetSuspendedEventsForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelEvents
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+
+            return parsedResult.Events;
+        }
+
+        public async Task<IEnumerable<Event>> GetSuspendedEventsForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationEvents
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+
+            return parsedResult.Events;
+        }
+
+        public async Task<IEnumerable<Event>> GetSuspendedEventsForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationEvents
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+
+            return parsedResult.Events;
+        }
+
+        public async Task TriggerMessageEvent(string messageName)
+        {
+            await this.TriggerMessageEvent(messageName, new {});
+        }
+
+        public async Task TriggerMessageEvent<TPayload>(string messageName, TPayload payload)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.TriggerMessageEvent
+                .Replace(ConsumerApiRestSettings.Params.EventName, messageName);
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+        public async Task TriggerSignalEvent(string signalName)
+        {
+            await this.TriggerSignalEvent(signalName, new {});
+        }
+
+        public async Task TriggerSignalEvent<TPayload>(string signalName, TPayload payload)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.TriggerSignalEvent
+                .Replace(ConsumerApiRestSettings.Params.EventName, signalName);
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
         }
 
 #endregion
