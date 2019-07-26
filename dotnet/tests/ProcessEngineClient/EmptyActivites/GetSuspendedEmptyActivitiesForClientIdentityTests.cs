@@ -37,6 +37,5 @@ namespace ProcessEngine.Client.Tests
 
             Assert.NotEmpty(emptyActivities);
         }
-
     }
 }

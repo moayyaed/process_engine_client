@@ -73,6 +73,5 @@ namespace ProcessEngine.Client.Tests
                     emptyActivityToBeFinished.FlowNodeInstanceId
                 );
         }
-
     }
 }

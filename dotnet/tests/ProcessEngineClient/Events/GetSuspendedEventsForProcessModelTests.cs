@@ -1,5 +1,6 @@
 namespace ProcessEngine.Client.Tests
 {
+    using System.Linq;
     using System.Threading.Tasks;
 
     using ProcessEngine.Client.Contracts;
@@ -9,36 +10,40 @@ namespace ProcessEngine.Client.Tests
     using Xunit;
 
     [Collection("ProcessEngineClient collection")]
-    public class GetEmptyActivitiesForProcessModelTests : ProcessEngineBaseTest
+    public class GetSuspendedEventsForProcessModelTests : ProcessEngineBaseTest
     {
         private readonly ProcessEngineClientFixture fixture;
 
-        public GetEmptyActivitiesForProcessModelTests(ProcessEngineClientFixture fixture)
+        public GetSuspendedEventsForProcessModelTests(ProcessEngineClientFixture fixture)
         {
             this.fixture = fixture;
         }
 
         [Fact]
-        public async Task BPMN_GetEmptyActivitiesForProcessModel_ShouldFetchEmptyActivityList()
+        public async Task BPMN_GetSuspendedEventsForProcessModel_ShouldFetchEventsOfRunningProcess()
         {
-            var processModelId = "test_consumer_api_emptyactivity";
+            var processModelId = "test_consumer_api_message_event";
             var payload = new ProcessStartRequest<object>();
             var callbackType = StartCallbackType.CallbackOnProcessInstanceCreated;
 
-            var processInstance = await this
+            var processStartResponsePayload = await this
                 .fixture
                 .ProcessEngineClient
                 .StartProcessInstance<object, object>(processModelId, "StartEvent_1", payload, callbackType);
 
-            // Give the ProcessEngine time to reach the EmptyActivity
             await Task.Delay(1000);
 
-            var emptyActivities = await this
+            var events = await this
                 .fixture
                 .ProcessEngineClient
-                .GetSuspendedEmptyActivitiesForProcessModel(processModelId);
+                .GetSuspendedEventsForProcessModel(processModelId);
 
-            Assert.NotEmpty(emptyActivities);
+            Assert.NotEmpty(events);
+
+            var fetchedEvent = events.ElementAt(0);
+
+            var expectedMessageName = "test_message_event";
+            Assert.Equal(fetchedEvent.EventName, expectedMessageName);
         }
     }
 }

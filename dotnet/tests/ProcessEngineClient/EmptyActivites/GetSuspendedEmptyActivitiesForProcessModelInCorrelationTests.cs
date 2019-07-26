@@ -39,7 +39,6 @@ namespace ProcessEngine.Client.Tests
                 .GetSuspendedEmptyActivitiesForProcessModelInCorrelation(processModelId, processInstance.CorrelationId);
 
             Assert.NotEmpty(emptyActivities);
-        }
-
+          }
     }
 }

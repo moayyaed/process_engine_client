@@ -9,36 +9,41 @@ namespace ProcessEngine.Client.Tests
     using Xunit;
 
     [Collection("ProcessEngineClient collection")]
-    public class GetEmptyActivitiesForProcessModelTests : ProcessEngineBaseTest
+    public class TriggerSignalEventTests : ProcessEngineBaseTest
     {
         private readonly ProcessEngineClientFixture fixture;
 
-        public GetEmptyActivitiesForProcessModelTests(ProcessEngineClientFixture fixture)
+        public TriggerSignalEventTests(ProcessEngineClientFixture fixture)
         {
             this.fixture = fixture;
         }
 
         [Fact]
-        public async Task BPMN_GetEmptyActivitiesForProcessModel_ShouldFetchEmptyActivityList()
+        public async Task BPMN_TriggerSignalEvent_ShouldContinueProcessWithSignalIntermediateCatchEvent()
         {
-            var processModelId = "test_consumer_api_emptyactivity";
+            var processModelId = "test_consumer_api_signal_event";
             var payload = new ProcessStartRequest<object>();
             var callbackType = StartCallbackType.CallbackOnProcessInstanceCreated;
 
-            var processInstance = await this
+            var processStartResponsePayload = await this
                 .fixture
                 .ProcessEngineClient
                 .StartProcessInstance<object, object>(processModelId, "StartEvent_1", payload, callbackType);
 
-            // Give the ProcessEngine time to reach the EmptyActivity
-            await Task.Delay(1000);
+            await Task.Delay(5000);
 
-            var emptyActivities = await this
+            var signalName = "test_signal_event";
+            await this.fixture.ProcessEngineClient.TriggerSignalEvent(signalName);
+
+            await Task.Delay(5000);
+
+            var processResult = await this
                 .fixture
                 .ProcessEngineClient
-                .GetSuspendedEmptyActivitiesForProcessModel(processModelId);
+                .GetResultForProcessModelInCorrelation<object>(processStartResponsePayload.CorrelationId, processModelId);
 
-            Assert.NotEmpty(emptyActivities);
+            Assert.NotEmpty(processResult);
         }
+
     }
 }
