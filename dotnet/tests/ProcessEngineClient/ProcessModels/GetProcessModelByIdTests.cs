@@ -29,9 +29,9 @@ namespace ProcessEngine.Client.Tests
 
             Assert.NotNull(processModel);
 
-            Assert.Equal(processModel.ID, processModelId);
-            Assert.Equal(processModel.StartEvents.ToList()[0].Id, "StartEvent_1");
-            Assert.Equal(processModel.EndEvents.ToList()[0].Id, "EndEvent_Success");
+            Assert.Equal(processModelId, processModel.ID);
+            Assert.Equal("StartEvent_1", processModel.StartEvents.ToList()[0].Id);
+            Assert.Equal("EndEvent_Success", processModel.EndEvents.ToList()[0].Id);
         }
     }
 }
