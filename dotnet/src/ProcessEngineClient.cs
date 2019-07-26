@@ -45,6 +45,15 @@ namespace ProcessEngine.Client
 
 #region "Process Models"
 
+        public async Task<IEnumerable<ProcessModel>> GetProcessModels()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModels;
+
+            var result = await this.HttpFacade.SendRequestAndExpectResult<ProcessModelList>(HttpMethod.Get, endpoint);
+
+            return result.ProcessModels;
+        }
+
         public async Task<ProcessModel> GetProcessModelById(string processModelId)
         {
             var endpoint = ConsumerApiRestSettings.Paths.ProcessModelById
@@ -63,15 +72,6 @@ namespace ProcessEngine.Client
             var parsedResult = await this.HttpFacade.GetProcessModelFromUrl(endpoint);
 
             return parsedResult;
-        }
-
-        public async Task<IEnumerable<ProcessModel>> GetProcessModels()
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessModels;
-
-            var result = await this.HttpFacade.SendRequestAndExpectResult<ProcessModelList>(HttpMethod.Get, endpoint);
-
-            return result.ProcessModels;
         }
 
         public async Task<IEnumerable<ProcessInstance>> GetProcessInstancesForClientIdentity()

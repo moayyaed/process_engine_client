@@ -14,6 +14,10 @@
 
     using ProcessEngine.ExternalTaskAPI.Contracts;
 
+    /// <summary>
+    /// This Client is used exclusively by the ExternalTaskWorker.
+    /// It accesses the ProcessEngine's HTTP endpoints for managing ExternalTasks.
+    /// </summary>
     public class ExternalTaskHttpClient : IExternalTaskAPI
     {
         private HttpClient httpClient;
