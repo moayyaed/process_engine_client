@@ -98,8 +98,7 @@ namespace ProcessEngine.Client
 
             if (result.IsSuccessStatusCode)
             {
-                var jsonResult = await result.Content.ReadAsStringAsync();
-                parsedResult = JsonConvert.DeserializeObject<TResult>(jsonResult);
+                parsedResult = await this.DeserializeResponse<TResult>(result);
             }
             else
             {
@@ -153,7 +152,7 @@ namespace ProcessEngine.Client
             return content;
         }
 
-        public async Task<TResponse> DeserializeResposne<TResponse>(HttpResponseMessage response)
+        public async Task<TResponse> DeserializeResponse<TResponse>(HttpResponseMessage response)
         {
             var serializedResponse = await response.Content.ReadAsStringAsync();
 

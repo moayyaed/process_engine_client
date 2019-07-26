@@ -11,8 +11,9 @@ namespace ProcessEngine.Client
     using ConsumerApiRestSettings = ProcessEngine.ConsumerAPI.Contracts.RestSettings;
 
     using ProcessEngine.Client.Contracts;
+  using System.Collections.Generic;
 
-    public class ProcessEngineClient: IProcessEngineClient
+  public class ProcessEngineClient: IProcessEngineClient
     {
         private static IIdentity DummyIdentity = new Identity() {
             UserId = "ZHVtbXlfdG9rZW4=",
@@ -32,6 +33,46 @@ namespace ProcessEngine.Client
         {
             this.HttpFacade = new HttpFacade(url, identity);
             this.Identity = identity;
+        }
+
+#region "Process Models"
+
+        public async Task<ProcessModel> GetProcessModelById(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelById
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.HttpFacade.GetProcessModelFromUrl(endpoint);
+
+            return parsedResult;
+        }
+
+        public async Task<ProcessModel> GetProcessModelByProcessInstanceId(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelByProcessInstanceId
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.HttpFacade.GetProcessModelFromUrl(endpoint);
+
+            return parsedResult;
+        }
+
+        public async Task<IEnumerable<ProcessModel>> GetProcessModels()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModels;
+
+            var result = await this.HttpFacade.SendRequestAndExpectResult<ProcessModelList>(HttpMethod.Get, endpoint);
+
+            return result.ProcessModels;
+        }
+
+        public async Task<IEnumerable<ProcessInstance>> GetProcessInstancesForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnProcessInstances;
+
+            var result = await this.HttpFacade.SendRequestAndExpectResult<IEnumerable<ProcessInstance>>(HttpMethod.Get, endpoint);
+
+            return result;
         }
 
         public async Task<ProcessStartResponse<TResponsePayload>> StartProcessInstance<TResponsePayload>(
@@ -83,6 +124,24 @@ namespace ProcessEngine.Client
             return parsedResponse;
         }
 
+        public async Task<IEnumerable<CorrelationResult<TPayload>>> GetResultForProcessModelInCorrelation<TPayload>(
+            string correlationId,
+            string processModelId)
+        where TPayload : new()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetProcessResultForCorrelation
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var result = await this.HttpFacade.SendRequestAndExpectResult<IEnumerable<CorrelationResult<TPayload>>>(HttpMethod.Get, endpoint);
+
+            return result;
+        }
+
+#endregion
+
+#region "ExternalTasks"
+
         public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload, TResult>(
             string topic,
             ExtendedHandleExternalTaskAction<TPayload, TResult> handleAction
@@ -114,6 +173,10 @@ namespace ProcessEngine.Client
             return externalTaskWorker;
         }
 
+    #endregion
+
+#region "Private Helper Functions"
+
         private string BuildStartProcessInstanceUrl(string processModelId, string startEventId, string endEventId, StartCallbackType startCallbackType)
         {
             var endpoint = ConsumerApiRestSettings.Paths.StartProcessInstance
@@ -133,5 +196,8 @@ namespace ProcessEngine.Client
 
             return url;
         }
+
+#endregion
+
     }
 }
