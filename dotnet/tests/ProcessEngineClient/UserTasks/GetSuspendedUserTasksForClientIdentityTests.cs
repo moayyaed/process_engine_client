@@ -8,7 +8,7 @@ namespace ProcessEngine.Client.Tests
 
     using Xunit;
 
-    [Collection("ConsumerAPI collection")]
+    [Collection("ProcessEngineClient collection")]
     public class GetSuspendedUserTasksForClientIdentityTests : ProcessEngineBaseTest
     {
         private readonly ProcessEngineClientFixture fixture;

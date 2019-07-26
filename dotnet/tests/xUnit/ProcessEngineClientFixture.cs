@@ -31,8 +31,10 @@ namespace ProcessEngine.Client.Tests.xUnit {
 
         private void CreateProcessEngineClient()
         {
-            string baseUrlFromEnv = Environment.GetEnvironmentVariable("PROCESS_ENGINE_REST_API_URL");
-            string baseUrl = string.IsNullOrEmpty(baseUrlFromEnv) ? "http://localhost:8000" : baseUrlFromEnv;
+            var baseUrlFromEnv = Environment.GetEnvironmentVariable("PROCESS_ENGINE_REST_API_URL");
+            var baseUrl = string.IsNullOrEmpty(baseUrlFromEnv)
+                ? "http://localhost:8000"
+                : baseUrlFromEnv;
 
             this.processEngineRestApiUrl = baseUrl;
 
