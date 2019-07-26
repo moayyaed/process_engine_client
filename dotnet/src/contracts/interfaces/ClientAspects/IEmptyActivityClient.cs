@@ -1,5 +1,6 @@
 namespace ProcessEngine.Client.Contracts.ClientAspects
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
@@ -19,7 +20,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// which to retrieve the EmptyActivities.</param>
         /// <exception cref="System.UnauthorizedAccessException">Thrown when the identity has insufficient rights to perform the operation.</exception>
         /// <exception cref="ProcessNotFoundException"> Thrown when the ProcessModel could not be found.</exception>
-        Task<EmptyActivityList> GetSuspendedEmptyActivitiesForProcessModel(string processModelId);
+        Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessModel(string processModelId);
 
         /// <summary>
         /// Retrieves a list of all suspended EmptyActivities belonging to an instance of a specific ProcessModel within a Correlation.
@@ -28,7 +29,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <param name="processInstanceId">The ID of the ProcessInstance for which to retrieve the EmptyActivities.</param>
         /// <exception cref="System.UnauthorizedAccessException">Thrown when the identity has insufficient rights to perform the operation.</exception>
         /// <exception cref="ProcessNotFoundException"> Thrown when the ProcessInstance could not be found.</exception>
-        Task<EmptyActivityList> GetSuspendedEmptyActivitiesForProcessInstance(string processInstanceId);
+        Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessInstance(string processInstanceId);
 
         /// <summary>
         /// Retrieves a list of all suspended EmptyActivities belonging to a specific Correlation.
@@ -37,7 +38,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <param name="correlationId">The ID of the Correlation for which to retrieve the EmptyActivities.</param>
         /// <exception cref="System.UnauthorizedAccessException">Thrown when the identity has insufficient rights to perform the operation.</exception>
         /// <exception cref="ProcessNotFoundException"> Thrown when the Correlation could not be found.</exception>
-        Task<EmptyActivityList> GetSuspendedEmptyActivitiesForCorrelation(string correlationId);
+        Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForCorrelation(string correlationId);
 
         /// <summary>
         /// Retrieves a list of all suspended EmptyActivities belonging to an instance of a specific ProcessModel within a Correlation.
@@ -47,13 +48,13 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <param name="correlationId">The ID of the Correlation for which to retrieve the EmptyActivities.</param>
         /// <exception cref="System.UnauthorizedAccessException">Thrown when the identity has insufficient rights to perform the operation.</exception>
         /// <exception cref="ProcessNotFoundException"> Thrown when the ProcessModel or Correlation could not be found.</exception>
-        Task<EmptyActivityList> GetSuspendedEmptyActivitiesForProcessModelInCorrelation(string processModelId, string correlationId);
+        Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessModelInCorrelation(string processModelId, string correlationId);
 
         /// <summary>
         /// Gets all waiting EmptyActivities belonging to the identity associated with the client.
         /// </summary>
         /// <returns>The fetched EmptyActivities.</returns>
-        Task<EmptyActivityList> getSuspendedEmptyActivitiesForClientIdentity();
+        Task<IEnumerable<EmptyActivity>> getSuspendedEmptyActivitiesForClientIdentity();
 
         /// <summary>
         /// Finishes a EmptyActivity belonging to an instance of a specific ProcessModel within a correlation.

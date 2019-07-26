@@ -1,5 +1,6 @@
 namespace ProcessEngine.Client.Contracts.ClientAspects
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
@@ -13,21 +14,21 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// </summary>
         /// <returns>The fetched UserTasks.</returns>
         /// <param name="processModelId">The ID of the ProcessDefinition for which to find UserTasks.</param>
-        Task<UserTaskList> GetSuspendedUserTasksForProcessModel(string processModelId);
+        Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModel(string processModelId);
 
         /// <summary>
         /// Retrieves a list of all suspended UserTasks belonging to the given ProcessInstance.
         /// </summary>
         /// <returns>The fetched UserTasks.</returns>
         /// <param name="processInstanceId">The ID of the ProcessInstance for which to find UserTasks.</param>
-        Task<UserTaskList> GetSuspendedUserTasksForProcessInstance(string processInstanceId);
+        Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessInstance(string processInstanceId);
 
         /// <summary>
         /// Retrieves a list of all suspended UserTasks belonging to a specific Correlation.
         /// </summary>
         /// <returns>The fetched UserTasks.</returns>
         /// <param name="correlationId">The ID of the Correlation for which to find UserTasks.</param>
-        Task<UserTaskList> GetSuspendedUserTasksForCorrelation(string correlationId);
+        Task<IEnumerable<UserTask>> GetSuspendedUserTasksForCorrelation(string correlationId);
 
         /// <summary>
         /// Retrieves a list of all suspended UserTasks belonging to an instance of a specific ProcessModel within a Correlation.
@@ -35,13 +36,13 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <returns>The fetched UserTasks.</returns>
         /// <param name="processModelId">The ID of the ProcessDefinition for which to find UserTasks.</param>
         /// <param name="correlationId">The ID of the Correlation for which to find UserTasks.</param>
-        Task<UserTaskList> GetSuspendedUserTasksForProcessModelInCorrelation(string processModelId, string correlationId);
+        Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModelInCorrelation(string processModelId, string correlationId);
 
         /// <summary>
         /// Gets all waiting UserTasks belonging to the identity associated with the client.
         /// </summary>
         /// <returns>The fetched UserTasks.</returns>
-        Task<UserTaskList> GetSuspendedUserTasksForClientIdentity();
+        Task<IEnumerable<UserTask>> GetSuspendedUserTasksForClientIdentity();
 
         /// <summary>
         /// Finishes a UserTask belonging to an instance of a specific ProcessModel within a correlation.

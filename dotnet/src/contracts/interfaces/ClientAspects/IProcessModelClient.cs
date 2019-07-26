@@ -14,7 +14,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Gets all ProcessModels that the Identity associated with the client can access.
         /// </summary>
         /// <returns>The retrieved ProcessModels.</returns>
-        Task<ProcessModelList> GetProcessModels();
+        Task<IEnumerable<ProcessModel>> GetProcessModels();
 
         /// <summary>
         /// Gets the ProcessModel with the given ID.

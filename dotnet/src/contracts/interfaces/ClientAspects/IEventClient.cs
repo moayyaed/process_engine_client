@@ -1,5 +1,6 @@
 namespace ProcessEngine.Client.Contracts.ClientAspects
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
@@ -28,7 +29,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the ProcessModel could not be found.
         /// </exception>
-        Task<EventList> GetSuspendedEventsForProcessModel(string processModelId);
+        Task<IEnumerable<Event>> GetSuspendedEventsForProcessModel(string processModelId);
 
         /// <summary>
         /// Retrieves a list of all triggerable events belonging to an instance
@@ -47,7 +48,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the Correlation could not be found.
         /// </exception>
-        Task<EventList> GetSuspendedEventsForCorrelation(string correlationId);
+        Task<IEnumerable<Event>> GetSuspendedEventsForCorrelation(string correlationId);
 
         /// <summary>
         /// Retrieves a list of all triggerable events belonging to an instance
@@ -69,7 +70,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <exception cref="ProcessNotFoundException">
         /// Thrown when the ProcessModel or the Correlation could not be found.
         /// </exception>
-        Task<EventList> GetSuspendedEventsForProcessModelInCorrelation(string processModelId, string correlationId);
+        Task<IEnumerable<Event>> GetSuspendedEventsForProcessModelInCorrelation(string processModelId, string correlationId);
 
         /// <summary>
         /// Triggers a message event.

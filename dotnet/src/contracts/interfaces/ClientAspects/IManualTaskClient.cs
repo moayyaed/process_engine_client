@@ -1,5 +1,6 @@
 namespace ProcessEngine.Client.Contracts.ClientAspects
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
@@ -14,7 +15,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <returns>The fetched ManualTasks.</returns>
         /// <param name="processModelId">The ID of the ProcessDefinition for
         /// which to retrieve the ManualTasks.</param>
-        Task<ManualTaskList> GetSuspendedManualTasksForProcessModel(string processModelId);
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModel(string processModelId);
 
         /// <summary>
         /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel within a Correlation.
@@ -22,7 +23,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <returns>The fetched ManualTasks.</returns>
         /// <param name="processInstanceId">The ID of the ProcessInstance for
         /// which to retrieve the ManualTasks.</param>
-        Task<ManualTaskList> GetSuspendedManualTasksForProcessInstance(string processInstanceId);
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessInstance(string processInstanceId);
 
         /// <summary>
         /// Retrieves a list of all suspended ManualTasks belonging to a specific Correlation.
@@ -30,7 +31,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <returns>The fetched ManualTasks.</returns>
         /// <param name="correlationId">The ID of the Correlation for which to
         /// retrieve the ManualTasks.</param>
-        Task<ManualTaskList> GetSuspendedManualTasksForCorrelation(string correlationId);
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForCorrelation(string correlationId);
 
         /// <summary>
         /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel within a Correlation.
@@ -39,13 +40,13 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <param name="processModelId">The ID of the ProcessDefinition for
         /// which to retrieve the ManualTasks.</param>
         /// <param name="correlationId">The ID of the Correlation for which to retrieve the ManualTasks.</param>
-        Task<ManualTaskList> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId);
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId);
 
         /// <summary>
         /// Gets all waiting ManualTasks belonging to the identity associated with the client.
         /// </summary>
         /// <returns>The fetched ManualTasks.</returns>
-        Task<ManualTaskList> GetSuspendedManualTasksForClientIdentity();
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForClientIdentity();
 
         /// <summary>
         /// Finishes a ManualTask belonging to an instance of a specific ProcessModel within a correlation.
