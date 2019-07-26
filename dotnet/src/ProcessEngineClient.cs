@@ -209,6 +209,71 @@ namespace ProcessEngine.Client
 
 #endregion
 
+#region "EmptyActivities"
+
+        public async Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelEmptyActivities
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+
+            return parsedResult.EmptyActivities;
+        }
+
+        public async Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessInstance(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceEmptyActivities
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+
+            return parsedResult.EmptyActivities;
+        }
+
+        public async Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationEmptyActivities
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+
+            return parsedResult.EmptyActivities;
+        }
+
+        public async Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationEmptyActivities
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+
+            return parsedResult.EmptyActivities;
+        }
+
+        public async Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnEmptyActivities;
+
+            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+
+            return parsedResult.EmptyActivities;
+        }
+
+        public async Task FinishEmptyActivity(string processInstanceId, string correlationId, string emptyActivityInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.FinishEmptyActivity
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.EmptyActivityInstanceId, emptyActivityInstanceId);
+
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+#endregion
+
 #region "ExternalTasks"
 
         public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload, TResult>(

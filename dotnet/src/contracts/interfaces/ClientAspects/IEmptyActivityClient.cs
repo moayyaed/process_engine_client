@@ -54,7 +54,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Gets all waiting EmptyActivities belonging to the identity associated with the client.
         /// </summary>
         /// <returns>The fetched EmptyActivities.</returns>
-        Task<IEnumerable<EmptyActivity>> getSuspendedEmptyActivitiesForClientIdentity();
+        Task<IEnumerable<EmptyActivity>> GetSuspendedEmptyActivitiesForClientIdentity();
 
         /// <summary>
         /// Finishes a EmptyActivity belonging to an instance of a specific ProcessModel within a correlation.
