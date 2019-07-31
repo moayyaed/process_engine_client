@@ -26,6 +26,8 @@ namespace ProcessEngine.Client
 
         private IIdentity Identity { get; set; }
 
+        private readonly string processEngineUrl;
+
 #endregion
 
 #region "Constructors"
@@ -37,7 +39,8 @@ namespace ProcessEngine.Client
 
         public ProcessEngineClient(string url, IIdentity identity)
         {
-            this.HttpFacade = new HttpFacade(url, identity);
+            this.processEngineUrl = url;
+            this.HttpFacade = new HttpFacade(url, ConsumerApiRestSettings.Endpoints.ConsumerAPI, identity);
             this.Identity = identity;
         }
 
@@ -59,7 +62,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.ProcessModelById
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var parsedResult = await this.HttpFacade.GetProcessModelFromUrl(endpoint);
+            var parsedResult = await this.GetProcessModelFromUrl(endpoint);
 
             return parsedResult;
         }
@@ -69,7 +72,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.ProcessModelByProcessInstanceId
                 .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
 
-            var parsedResult = await this.HttpFacade.GetProcessModelFromUrl(endpoint);
+            var parsedResult = await this.GetProcessModelFromUrl(endpoint);
 
             return parsedResult;
         }
@@ -155,7 +158,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.ProcessModelEvents
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+            var parsedResult = await this.GetTriggerableEventsFromUrl(endpoint);
 
             return parsedResult.Events;
         }
@@ -165,7 +168,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.CorrelationEvents
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
 
-            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+            var parsedResult = await this.GetTriggerableEventsFromUrl(endpoint);
 
             return parsedResult.Events;
         }
@@ -176,7 +179,7 @@ namespace ProcessEngine.Client
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
 
-            var parsedResult = await this.HttpFacade.GetTriggerableEventsFromUrl(endpoint);
+            var parsedResult = await this.GetTriggerableEventsFromUrl(endpoint);
 
             return parsedResult.Events;
         }
@@ -216,7 +219,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.ProcessModelEmptyActivities
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+            var parsedResult = await this.GetEmptyActivitiesFromUrl(endpoint);
 
             return parsedResult.EmptyActivities;
         }
@@ -226,7 +229,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceEmptyActivities
                 .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
 
-            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+            var parsedResult = await this.GetEmptyActivitiesFromUrl(endpoint);
 
             return parsedResult.EmptyActivities;
         }
@@ -236,7 +239,7 @@ namespace ProcessEngine.Client
             var endpoint = ConsumerApiRestSettings.Paths.CorrelationEmptyActivities
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
 
-            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+            var parsedResult = await this.GetEmptyActivitiesFromUrl(endpoint);
 
             return parsedResult.EmptyActivities;
         }
@@ -247,7 +250,7 @@ namespace ProcessEngine.Client
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
 
-            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+            var parsedResult = await this.GetEmptyActivitiesFromUrl(endpoint);
 
             return parsedResult.EmptyActivities;
         }
@@ -256,7 +259,7 @@ namespace ProcessEngine.Client
         {
             var endpoint = ConsumerApiRestSettings.Paths.GetOwnEmptyActivities;
 
-            var parsedResult = await this.HttpFacade.GetEmptyActivitiesFromUrl(endpoint);
+            var parsedResult = await this.GetEmptyActivitiesFromUrl(endpoint);
 
             return parsedResult.EmptyActivities;
         }
@@ -267,6 +270,137 @@ namespace ProcessEngine.Client
                 .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
                 .Replace(ConsumerApiRestSettings.Params.EmptyActivityInstanceId, emptyActivityInstanceId);
+
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+#endregion
+
+#region "ManualTasks"
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessInstance(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationManualTasks
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationManualTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnManualTasks;
+
+            var parsedResult = await this.GetManualTasksFromUrl(endpoint);
+
+            return parsedResult.ManualTasks;
+        }
+
+        public async Task FinishManualTask(string processInstanceId, string correlationId, string manualTaskInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.FinishManualTask
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.ManualTaskInstanceId, manualTaskInstanceId);
+
+
+            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
+        }
+
+#endregion
+
+#region "UserTasks"
+
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModel(string processModelId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
+
+            var parsedResult = await this.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessInstance(string processInstanceId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
+
+            var parsedResult = await this.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForCorrelation(string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.CorrelationUserTasks
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModelInCorrelation(string processModelId, string correlationId)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationUserTasks
+                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
+
+            var parsedResult = await this.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForClientIdentity()
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.GetOwnUserTasks;
+
+            var parsedResult = await this.GetUserTasksFromUrl(endpoint);
+
+            return parsedResult.UserTasks;
+        }
+
+        public async Task FinishUserTask(string processInstanceId, string correlationId, string userTaskInstanceId, UserTaskResult userTaskResult)
+        {
+            var endpoint = ConsumerApiRestSettings.Paths.FinishUserTask
+                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
+                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
+                .Replace(ConsumerApiRestSettings.Params.UserTaskInstanceId, userTaskInstanceId);
 
 
             await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
@@ -298,144 +432,13 @@ namespace ProcessEngine.Client
         where TPayload : new()
         where TResult : new()
         {
-            var externalTaskHttpClient = new ExternalTaskHttpClient(this.HttpFacade.EndpointAddress);
+            var externalTaskHttpClient = new ExternalTaskHttpClient(this.processEngineUrl);
             var externalTaskWorker = new ExternalTaskWorker(externalTaskHttpClient);
 
             // We must not await this, because this method runs in an infinite loop that never gets resolved until the "stop" command is given.
             externalTaskWorker.SubscribeToExternalTasksWithTopic<TPayload, TResult>(this.Identity, topic, maxTasks, timeout, handleAction);
 
             return externalTaskWorker;
-        }
-
-    #endregion
-
-#region "ManualTasks"
-
-        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModel(string processModelId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelManualTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
-
-            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
-
-            return parsedResult.ManualTasks;
-        }
-
-        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessInstance(string processInstanceId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceManualTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
-
-            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
-
-            return parsedResult.ManualTasks;
-        }
-
-        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForCorrelation(string correlationId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.CorrelationManualTasks
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
-
-            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
-
-            return parsedResult.ManualTasks;
-        }
-
-        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationManualTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
-
-            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
-
-            return parsedResult.ManualTasks;
-        }
-
-        public async Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForClientIdentity()
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.GetOwnManualTasks;
-
-            var parsedResult = await this.HttpFacade.GetManualTasksFromUrl(endpoint);
-
-            return parsedResult.ManualTasks;
-        }
-
-        public async Task FinishManualTask(string processInstanceId, string correlationId, string manualTaskInstanceId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.FinishManualTask
-                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
-                .Replace(ConsumerApiRestSettings.Params.ManualTaskInstanceId, manualTaskInstanceId);
-
-
-            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
-        }
-
-#endregion
-
-#region "UserTasks"
-
-
-        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModel(string processModelId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelUserTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
-
-            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
-
-            return parsedResult.UserTasks;
-        }
-
-        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessInstance(string processInstanceId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessInstanceUserTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId);
-
-            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
-
-            return parsedResult.UserTasks;
-        }
-
-        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForCorrelation(string correlationId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.CorrelationUserTasks
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
-
-            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
-
-            return parsedResult.UserTasks;
-        }
-
-        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForProcessModelInCorrelation(string processModelId, string correlationId)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.ProcessModelCorrelationUserTasks
-                .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId)
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId);
-
-            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
-
-            return parsedResult.UserTasks;
-        }
-
-        public async Task<IEnumerable<UserTask>> GetSuspendedUserTasksForClientIdentity()
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.GetOwnUserTasks;
-
-            var parsedResult = await this.HttpFacade.GetUserTasksFromUrl(endpoint);
-
-            return parsedResult.UserTasks;
-        }
-
-        public async Task FinishUserTask(string processInstanceId, string correlationId, string userTaskInstanceId, UserTaskResult userTaskResult)
-        {
-            var endpoint = ConsumerApiRestSettings.Paths.FinishUserTask
-                .Replace(ConsumerApiRestSettings.Params.ProcessInstanceId, processInstanceId)
-                .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
-                .Replace(ConsumerApiRestSettings.Params.UserTaskInstanceId, userTaskInstanceId);
-
-
-            await this.HttpFacade.SendRequestAndExpectNoResult(HttpMethod.Post, endpoint);
         }
 
 #endregion
@@ -460,6 +463,41 @@ namespace ProcessEngine.Client
             }
 
             return url;
+        }
+
+        private async Task<ProcessModel> GetProcessModelFromUrl(string url)
+        {
+            var result = await this.HttpFacade.SendRequestAndExpectResult<ProcessModel>(HttpMethod.Get, url);
+
+            return result;
+        }
+
+        private async Task<EventList> GetTriggerableEventsFromUrl(string url)
+        {
+            var result = await this.HttpFacade.SendRequestAndExpectResult<EventList>(HttpMethod.Get, url);
+
+            return result;
+        }
+
+        private async Task<EmptyActivityList> GetEmptyActivitiesFromUrl(string url)
+        {
+            var result = await this.HttpFacade.SendRequestAndExpectResult<EmptyActivityList>(HttpMethod.Get, url);
+
+            return result;
+        }
+
+        private async Task<ManualTaskList> GetManualTasksFromUrl(string url)
+        {
+            var result = await this.HttpFacade.SendRequestAndExpectResult<ManualTaskList>(HttpMethod.Get, url);
+
+            return result;
+        }
+
+        private async Task<UserTaskList> GetUserTasksFromUrl(string url)
+        {
+            var result = await this.HttpFacade.SendRequestAndExpectResult<UserTaskList>(HttpMethod.Get, url);
+
+            return result;
         }
 
 #endregion
