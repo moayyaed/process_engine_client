@@ -149,7 +149,7 @@ namespace ProcessEngine.Client
                     var result = await handleAction(externalTask.Payload, externalTask);
 
                     lockRefreshTimer.Stop();
-                    await result.SendToExternalTaskApi(this.ExternalTaskHttpClient, identity, WorkerId);
+                    await this.ExternalTaskHttpClient.FinishExternalTask(identity, this.WorkerId, externalTask.Id, result);
                 }
                 catch (Exception exception)
                 {

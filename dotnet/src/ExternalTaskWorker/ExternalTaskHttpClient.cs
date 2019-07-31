@@ -1,14 +1,8 @@
 ﻿namespace ProcessEngine.Client
 {
-    using System;
     using System.Collections.Generic;
     using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text;
     using System.Threading.Tasks;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
 
     using EssentialProjects.IAM.Contracts;
 
@@ -20,19 +14,12 @@
     /// </summary>
     public class ExternalTaskHttpClient : IExternalTaskAPI
     {
-        private HttpClient httpClient;
+        private HttpFacade HttpFacade { get; }
 
         public ExternalTaskHttpClient(string processEngineUrl)
         {
-            this.ConfigureHttpClient(processEngineUrl);
-        }
-
-        private void ConfigureHttpClient(string processEngineUrl)
-        {
-            this.httpClient = new HttpClient();
-            this.httpClient.BaseAddress = new Uri(processEngineUrl);
-            this.httpClient.DefaultRequestHeaders.Accept.Clear();
-            this.httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var externalTaskApiEndpoint = "/api/external_task/v1";
+            this.HttpFacade = new HttpFacade(processEngineUrl, externalTaskApiEndpoint);
         }
 
         public async Task ExtendLock(IIdentity identity, string workerId, string externalTaskId, int additionalDuration)
@@ -59,13 +46,7 @@
                 lockDuration
             );
 
-            var response = await this.SendPostToExternalTaskApi<FetchAndLockRequest, IEnumerable<ExternalTask<TPayload>>>
-            (
-                identity,
-                uri,
-                request
-            );
-            return response;
+            return await this.SendPostToExternalTaskApi<FetchAndLockRequest, IEnumerable<ExternalTask<TPayload>>>(identity, uri, request);
         }
 
         public async Task FinishExternalTask<TPayload>(IIdentity identity, string workerId, string externalTaskId, TPayload payload)
@@ -110,63 +91,17 @@
 
         public void Dispose()
         {
-            this.httpClient.Dispose();
+            this.HttpFacade.Dispose();
         }
 
         private async Task SendPostToExternalTaskApi<TRequest>(IIdentity identity, string uri, TRequest request)
         {
-            await this.SendPostRequest(identity, uri, request);
+            await this.HttpFacade.SendRequestAndExpectNoResult<TRequest>(HttpMethod.Post, uri, request, identity);
         }
 
         private async Task<TResponse> SendPostToExternalTaskApi<TRequest, TResponse>(IIdentity identity, string uri, TRequest request)
         {
-            var response = await this.SendPostRequest(identity, uri, request);
-
-            return await DeserializeResposne<TResponse>(response);
-        }
-
-        private async Task<HttpResponseMessage> SendPostRequest<TRequest>(IIdentity identity, string uri, TRequest request)
-        {
-            SetAuthenticationHeader(identity);
-
-            var content = this.SerializeRequest(request);
-            var url = this.ApplyBaseUrl(uri);
-
-            var response = await this.httpClient.PostAsync(url, content);
-
-            response.EnsureSuccessStatusCode();
-
-            return response;
-        }
-
-        private void SetAuthenticationHeader(IIdentity identity)
-        {
-            this.httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", identity.Token);
-        }
-
-        private StringContent SerializeRequest<TRequest>(TRequest request)
-        {
-            var settings = new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
-            };
-
-            var serializedRequest = JsonConvert.SerializeObject(request, settings);
-            var content = new StringContent(serializedRequest, Encoding.UTF8, "application/json");
-            return content;
-        }
-
-        private async Task<TResponse> DeserializeResposne<TResponse>(HttpResponseMessage response)
-        {
-            var serializedResponse = await response.Content.ReadAsStringAsync();
-
-            return JsonConvert.DeserializeObject<TResponse>(serializedResponse);
-        }
-
-        private string ApplyBaseUrl(string uri)
-        {
-            const string BaseRoute = "api/external_task/v1";
-            return $"{BaseRoute}/{uri}";
+            return await this.HttpFacade.SendRequestAndExpectResult<TRequest, TResponse>(HttpMethod.Post, uri, request, identity);
         }
     }
 }
