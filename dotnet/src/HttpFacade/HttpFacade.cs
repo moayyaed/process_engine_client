@@ -9,10 +9,6 @@ namespace ProcessEngine.Client
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 
-    using ProcessEngine.ConsumerAPI.Contracts.DataModel;
-
-    using ConsumerApiRestSettings = ProcessEngine.ConsumerAPI.Contracts.RestSettings;
-
     using EssentialProjects.IAM.Contracts;
 
     internal class HttpFacade
@@ -21,64 +17,35 @@ namespace ProcessEngine.Client
 
         private IIdentity Identity { get; set; }
 
-        public HttpFacade(string url, IIdentity identity)
+        private string ApiEndpoint { get; set; }
+
+        public HttpFacade(string processEngineUrl, string apiEndpoint)
+            : this(processEngineUrl, apiEndpoint, null)
         {
+        }
+
+        public HttpFacade(string processEngineUrl, string apiEndpoint, IIdentity identity)
+        {
+            this.ApiEndpoint = apiEndpoint;
             this.HttpClient = new HttpClient();
-            this.HttpClient.BaseAddress = new Uri(url);
+            this.HttpClient.BaseAddress = new Uri(processEngineUrl);
             this.Identity = identity;
         }
 
-        public string EndpointAddress {
-            get {
-                return this.HttpClient.BaseAddress.ToString();
-            }
+        public void Dispose()
+        {
+            this.HttpClient.Dispose();
         }
 
-        public async Task<ProcessModel> GetProcessModelFromUrl(string url)
+        public async Task SendRequestAndExpectNoResult(HttpMethod method, string endpoint, IIdentity identity = null)
         {
-            var result = await this.SendRequestAndExpectResult<ProcessModel>(HttpMethod.Get, url);
-
-            return result;
+            await this.SendRequestAndExpectNoResult<object>(method, endpoint, identity, null);
         }
 
-        public async Task<EventList> GetTriggerableEventsFromUrl(string url)
+        public async Task SendRequestAndExpectNoResult<TRequest>(HttpMethod method, string endpoint, TRequest payload, IIdentity identity = null)
         {
-            var result = await this.SendRequestAndExpectResult<EventList>(HttpMethod.Get, url);
-
-            return result;
-        }
-
-        public async Task<EmptyActivityList> GetEmptyActivitiesFromUrl(string url)
-        {
-            var result = await this.SendRequestAndExpectResult<EmptyActivityList>(HttpMethod.Get, url);
-
-            return result;
-        }
-
-        public async Task<ManualTaskList> GetManualTasksFromUrl(string url)
-        {
-            var result = await this.SendRequestAndExpectResult<ManualTaskList>(HttpMethod.Get, url);
-
-            return result;
-        }
-
-        public async Task<UserTaskList> GetUserTasksFromUrl(string url)
-        {
-            var result = await this.SendRequestAndExpectResult<UserTaskList>(HttpMethod.Get, url);
-
-            return result;
-        }
-
-        public async Task SendRequestAndExpectNoResult(HttpMethod method, string endpoint)
-        {
-            await this.SendRequestAndExpectNoResult<object>(method, endpoint, null);
-        }
-
-        public async Task SendRequestAndExpectNoResult<TRequest>(HttpMethod method, string endpoint, TRequest payload)
-        {
-            var url = this.ApplyBaseConsumerApiUrl(endpoint);
-
-            var request = this.CreateRequestMessage<TRequest>(this.Identity, method, url, payload);
+            var identityToUse = identity == null ? this.Identity : identity;
+            var request = this.CreateRequestMessage<TRequest>(identityToUse, method, endpoint, payload);
             var result = await this.HttpClient.SendAsync(request);
 
             if (!result.IsSuccessStatusCode)
@@ -87,19 +54,18 @@ namespace ProcessEngine.Client
             }
         }
 
-        public async Task<TResult> SendRequestAndExpectResult<TResult>(HttpMethod method, string endpoint)
+        public async Task<TResult> SendRequestAndExpectResult<TResult>(HttpMethod method, string endpoint, IIdentity identity = null)
         {
-            return await this.SendRequestAndExpectResult<object, TResult>(method, endpoint, null);
+            return await this.SendRequestAndExpectResult<object, TResult>(method, endpoint, identity, null);
         }
 
-        public async Task<TResult> SendRequestAndExpectResult<TRequest, TResult>(HttpMethod method, string endpoint, TRequest payload)
+        public async Task<TResult> SendRequestAndExpectResult<TRequest, TResult>(HttpMethod method, string endpoint, TRequest payload, IIdentity identity = null)
         {
-            var url = this.ApplyBaseConsumerApiUrl(endpoint);
+            var identityToUse = identity == null ? this.Identity : identity;
+            var request = this.CreateRequestMessage<TRequest>(identityToUse, method, endpoint, payload);
+            var result = await this.HttpClient.SendAsync(request);
 
             TResult parsedResult = default(TResult);
-
-            var request = this.CreateRequestMessage<TRequest>(this.Identity, method, url, payload);
-            var result = await this.HttpClient.SendAsync(request);
 
             if (result.IsSuccessStatusCode)
             {
@@ -113,7 +79,7 @@ namespace ProcessEngine.Client
             return parsedResult;
         }
 
-        public HttpRequestMessage CreateRequestMessage<TRequest>(IIdentity identity, HttpMethod method, string url, TRequest content = default(TRequest))
+        private HttpRequestMessage CreateRequestMessage<TRequest>(IIdentity identity, HttpMethod method, string url, TRequest content = default(TRequest))
         {
             var hasNoIdentity = identity == null || identity.Token == null;
             if (hasNoIdentity)
@@ -126,7 +92,7 @@ namespace ProcessEngine.Client
             message.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", identity.Token);
 
-            message.RequestUri = new Uri(this.HttpClient.BaseAddress, url);
+            message.RequestUri = new Uri(this.HttpClient.BaseAddress, $"{this.ApiEndpoint}{url}");
             message.Method = method;
             message.Content = content == null
                 ? null
@@ -135,17 +101,7 @@ namespace ProcessEngine.Client
             return message;
         }
 
-        public string ApplyBaseConsumerApiUrl(string url)
-        {
-            return $"{ConsumerApiRestSettings.Endpoints.ConsumerAPI}{url}";
-        }
-
-        public void SetAuthenticationHeader(IIdentity identity)
-        {
-            this.HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", identity.Token);
-        }
-
-        public StringContent SerializePayload<TRequest>(TRequest request)
+        private StringContent SerializePayload<TRequest>(TRequest request)
         {
             var settings = new JsonSerializerSettings
             {
@@ -157,7 +113,7 @@ namespace ProcessEngine.Client
             return content;
         }
 
-        public async Task<TResponse> DeserializeResponse<TResponse>(HttpResponseMessage response)
+        private async Task<TResponse> DeserializeResponse<TResponse>(HttpResponseMessage response)
         {
             var serializedResponse = await response.Content.ReadAsStringAsync();
 
