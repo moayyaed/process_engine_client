@@ -58,14 +58,14 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   }
 
   // Process models and instances
-  public async getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList> {
+  public async getProcessModels(): Promise<Array<DataModels.ProcessModels.ProcessModel>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.processModels);
 
     const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessModelList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.processModels;
   }
 
   public async getProcessModelById(processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {
@@ -166,7 +166,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   }
 
   // Events
-  public async getSuspendedEventsForProcessModel(processModelId: string): Promise<DataModels.Events.EventList> {
+  public async getSuspendedEventsForProcessModel(processModelId: string): Promise<Array<DataModels.Events.Event>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelEvents
@@ -176,10 +176,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.events;
   }
 
-  public async getSuspendedEventsForCorrelation(correlationId: string): Promise<DataModels.Events.EventList> {
+  public async getSuspendedEventsForCorrelation(correlationId: string): Promise<Array<DataModels.Events.Event>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.correlationEvents
@@ -189,13 +189,13 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.events;
   }
 
   public async getSuspendedEventsForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.Events.EventList> {
+  ): Promise<Array<DataModels.Events.Event>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelCorrelationEvents
@@ -206,7 +206,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.Events.EventList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.events;
   }
 
   public async triggerMessageEvent(messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
@@ -232,7 +232,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   }
 
   // Empty Activities
-  public async getSuspendedEmptyActivitiesForProcessModel(processModelId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  public async getSuspendedEmptyActivitiesForProcessModel(processModelId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelEmptyActivities
@@ -242,10 +242,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForProcessInstance(processInstanceId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  public async getSuspendedEmptyActivitiesForProcessInstance(processInstanceId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processInstanceEmptyActivities
@@ -255,10 +255,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForCorrelation(correlationId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  public async getSuspendedEmptyActivitiesForCorrelation(correlationId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.correlationEmptyActivities
@@ -268,13 +268,13 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.emptyActivities;
   }
 
   public async getSuspendedEmptyActivitiesForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  ): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelCorrelationEmptyActivities
@@ -285,17 +285,17 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForClientIdentity(): Promise<DataModels.EmptyActivities.EmptyActivityList> {
+  public async getSuspendedEmptyActivitiesForClientIdentity(): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnEmptyActivities);
 
     const httpResponse = await this.httpClient.get<DataModels.EmptyActivities.EmptyActivityList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.emptyActivities;
   }
 
   public async finishEmptyActivity(
@@ -317,7 +317,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   }
 
   // UserTasks
-  public async getSuspendedUserTasksForProcessModel(processModelId: string): Promise<DataModels.UserTasks.UserTaskList> {
+  public async getSuspendedUserTasksForProcessModel(processModelId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelUserTasks
@@ -327,10 +327,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.userTasks;
   }
 
-  public async getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList> {
+  public async getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processInstanceUserTasks
@@ -340,10 +340,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.userTasks;
   }
 
-  public async getSuspendedUserTasksForCorrelation(correlationId: string): Promise<DataModels.UserTasks.UserTaskList> {
+  public async getSuspendedUserTasksForCorrelation(correlationId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.correlationUserTasks
@@ -353,13 +353,13 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.userTasks;
   }
 
   public async getSuspendedUserTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.UserTasks.UserTaskList> {
+  ): Promise<Array<DataModels.UserTasks.UserTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const restPath = ConsumerRestSettings.paths.processModelCorrelationUserTasks
@@ -370,17 +370,17 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.userTasks;
   }
 
-  public async getSuspendedUserTasksForClientIdentity(identity: IIdentity): Promise<DataModels.UserTasks.UserTaskList> {
+  public async getSuspendedUserTasksForClientIdentity(identity: IIdentity): Promise<Array<DataModels.UserTasks.UserTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnUserTasks);
 
     const httpResponse = await this.httpClient.get<DataModels.UserTasks.UserTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.userTasks;
   }
 
   public async finishUserTask(
@@ -402,7 +402,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   }
 
   // ManualTasks
-  public async getSuspendedManualTasksForProcessModel(processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+  public async getSuspendedManualTasksForProcessModel(processModelId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.processModelManualTasks
@@ -412,10 +412,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+  public async getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.processInstanceManualTasks
@@ -425,10 +425,10 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForCorrelation(correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
+  public async getSuspendedManualTasksForCorrelation(correlationId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.correlationManualTasks
@@ -438,13 +438,13 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.manualTasks;
   }
 
   public async getSuspendedManualTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.ManualTasks.ManualTaskList> {
+  ): Promise<Array<DataModels.ManualTasks.ManualTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const urlRestPart = ConsumerRestSettings.paths.processModelCorrelationManualTasks
@@ -455,17 +455,17 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForClientIdentity(): Promise<DataModels.ManualTasks.ManualTaskList> {
+  public async getSuspendedManualTasksForClientIdentity(): Promise<Array<DataModels.ManualTasks.ManualTask>> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnManualTasks);
 
     const httpResponse = await this.httpClient.get<DataModels.ManualTasks.ManualTaskList>(url, requestAuthHeaders);
 
-    return httpResponse.result;
+    return httpResponse.result.manualTasks;
   }
 
   public async finishManualTask(

@@ -3,18 +3,18 @@ import {DataModels} from '@process-engine/consumer_api_contracts';
 
 export interface IUserTaskClient {
 
-  getSuspendedUserTasksForProcessModel(processModelId: string): Promise<DataModels.UserTasks.UserTaskList>;
+  getSuspendedUserTasksForProcessModel(processModelId: string): Promise<Array<DataModels.UserTasks.UserTask>>;
 
-  getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList>;
+  getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.UserTasks.UserTask>>;
 
-  getSuspendedUserTasksForCorrelation(correlationId: string): Promise<DataModels.UserTasks.UserTaskList>;
+  getSuspendedUserTasksForCorrelation(correlationId: string): Promise<Array<DataModels.UserTasks.UserTask>>;
 
   getSuspendedUserTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.UserTasks.UserTaskList>;
+  ): Promise<Array<DataModels.UserTasks.UserTask>>;
 
-  getSuspendedUserTasksForClientIdentity(identity: IIdentity): Promise<DataModels.UserTasks.UserTaskList>;
+  getSuspendedUserTasksForClientIdentity(identity: IIdentity): Promise<Array<DataModels.UserTasks.UserTask>>;
 
   finishUserTask(
     processInstanceId: string,

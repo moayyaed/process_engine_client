@@ -10,7 +10,7 @@ import {HandleExternalTaskAction} from '../types/index';
 export interface IExternalTaskWorker {
 
   /**
-   * Id of worker
+   * The Id of the worker.
    */
   workerId: string;
 

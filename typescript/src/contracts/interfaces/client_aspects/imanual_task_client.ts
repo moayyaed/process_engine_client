@@ -3,18 +3,18 @@ import {DataModels} from '@process-engine/consumer_api_contracts';
 export interface IManualTaskClient {
 
   // ManualTasks
-  getSuspendedManualTasksForProcessModel(processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList>;
+  getSuspendedManualTasksForProcessModel(processModelId: string): Promise<Array<DataModels.ManualTasks.ManualTask>>;
 
-  getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList>;
+  getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.ManualTasks.ManualTask>>;
 
-  getSuspendedManualTasksForCorrelation(correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList>;
+  getSuspendedManualTasksForCorrelation(correlationId: string): Promise<Array<DataModels.ManualTasks.ManualTask>>;
 
   getSuspendedManualTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.ManualTasks.ManualTaskList>;
+  ): Promise<Array<DataModels.ManualTasks.ManualTask>>;
 
-  getSuspendedManualTasksForClientIdentity(): Promise<DataModels.ManualTasks.ManualTaskList>;
+  getSuspendedManualTasksForClientIdentity(): Promise<Array<DataModels.ManualTasks.ManualTask>>;
 
   finishManualTask(
     processInstanceId: string,

@@ -4,7 +4,7 @@ import {ProcessStartRequest, ProcessStartResponse} from '../../types/index';
 
 export interface IProcessModelClient {
 
-  getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList>;
+  getProcessModels(): Promise<Array<DataModels.ProcessModels.ProcessModel>>;
 
   getProcessModelById(processModelId: string): Promise<DataModels.ProcessModels.ProcessModel>;
 

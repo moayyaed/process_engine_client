@@ -29,8 +29,9 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   }
 
   // Process models and instances
-  public async getProcessModels(): Promise<DataModels.ProcessModels.ProcessModelList> {
-    return this.consumerApiService.getProcessModels(this.identity);
+  public async getProcessModels(): Promise<Array<DataModels.ProcessModels.ProcessModel>> {
+    const result = await this.consumerApiService.getProcessModels(this.identity);
+    return result.processModels;
   }
 
   public async getProcessModelById(processModelId: string): Promise<DataModels.ProcessModels.ProcessModel> {
@@ -89,19 +90,22 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   }
 
   // Events
-  public async getSuspendedEventsForProcessModel(processModelId: string): Promise<DataModels.Events.EventList> {
-    return this.consumerApiService.getEventsForProcessModel(this.identity, processModelId);
+  public async getSuspendedEventsForProcessModel(processModelId: string): Promise<Array<DataModels.Events.Event>> {
+    const result = await this.consumerApiService.getEventsForProcessModel(this.identity, processModelId);
+    return result.events;
   }
 
-  public async getSuspendedEventsForCorrelation(correlationId: string): Promise<DataModels.Events.EventList> {
-    return this.consumerApiService.getEventsForCorrelation(this.identity, correlationId);
+  public async getSuspendedEventsForCorrelation(correlationId: string): Promise<Array<DataModels.Events.Event>> {
+    const result = await this.consumerApiService.getEventsForCorrelation(this.identity, correlationId);
+    return result.events;
   }
 
   public async getSuspendedEventsForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.Events.EventList> {
-    return this.consumerApiService.getEventsForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+  ): Promise<Array<DataModels.Events.Event>> {
+    const result = await this.consumerApiService.getEventsForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+    return result.events;
   }
 
   public async triggerMessageEvent(messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void> {
@@ -113,27 +117,32 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   }
 
   // Empty Activities
-  public async getSuspendedEmptyActivitiesForProcessModel(processModelId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    return this.consumerApiService.getEmptyActivitiesForProcessModel(this.identity, processModelId);
+  public async getSuspendedEmptyActivitiesForProcessModel(processModelId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
+    const result = await this.consumerApiService.getEmptyActivitiesForProcessModel(this.identity, processModelId);
+    return result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForProcessInstance(processInstanceId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    return this.consumerApiService.getEmptyActivitiesForProcessInstance(this.identity, processInstanceId);
+  public async getSuspendedEmptyActivitiesForProcessInstance(processInstanceId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
+    const result = await this.consumerApiService.getEmptyActivitiesForProcessInstance(this.identity, processInstanceId);
+    return result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForCorrelation(correlationId: string): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    return this.consumerApiService.getEmptyActivitiesForCorrelation(this.identity, correlationId);
+  public async getSuspendedEmptyActivitiesForCorrelation(correlationId: string): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
+    const result = await this.consumerApiService.getEmptyActivitiesForCorrelation(this.identity, correlationId);
+    return result.emptyActivities;
   }
 
   public async getSuspendedEmptyActivitiesForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    return this.consumerApiService.getEmptyActivitiesForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+  ): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
+    const result = await this.consumerApiService.getEmptyActivitiesForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+    return result.emptyActivities;
   }
 
-  public async getSuspendedEmptyActivitiesForClientIdentity(): Promise<DataModels.EmptyActivities.EmptyActivityList> {
-    return this.consumerApiService.getWaitingEmptyActivitiesByIdentity(this.identity);
+  public async getSuspendedEmptyActivitiesForClientIdentity(): Promise<Array<DataModels.EmptyActivities.EmptyActivity>> {
+    const result = await this.consumerApiService.getWaitingEmptyActivitiesByIdentity(this.identity);
+    return result.emptyActivities;
   }
 
   public async finishEmptyActivity(
@@ -145,27 +154,32 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   }
 
   // UserTasks
-  public async getSuspendedUserTasksForProcessModel(processModelId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    return this.consumerApiService.getUserTasksForProcessModel(this.identity, processModelId);
+  public async getSuspendedUserTasksForProcessModel(processModelId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
+    const result = await this.consumerApiService.getUserTasksForProcessModel(this.identity, processModelId);
+    return result.userTasks;
   }
 
-  public async getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    return this.consumerApiService.getUserTasksForProcessInstance(this.identity, processInstanceId);
+  public async getSuspendedUserTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
+    const result = await this.consumerApiService.getUserTasksForProcessInstance(this.identity, processInstanceId);
+    return result.userTasks;
   }
 
-  public async getSuspendedUserTasksForCorrelation(correlationId: string): Promise<DataModels.UserTasks.UserTaskList> {
-    return this.consumerApiService.getUserTasksForCorrelation(this.identity, correlationId);
+  public async getSuspendedUserTasksForCorrelation(correlationId: string): Promise<Array<DataModels.UserTasks.UserTask>> {
+    const result = await this.consumerApiService.getUserTasksForCorrelation(this.identity, correlationId);
+    return result.userTasks;
   }
 
   public async getSuspendedUserTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.UserTasks.UserTaskList> {
-    return this.consumerApiService.getUserTasksForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+  ): Promise<Array<DataModels.UserTasks.UserTask>> {
+    const result = await this.consumerApiService.getUserTasksForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+    return result.userTasks;
   }
 
-  public async getSuspendedUserTasksForClientIdentity(): Promise<DataModels.UserTasks.UserTaskList> {
-    return this.consumerApiService.getWaitingUserTasksByIdentity(this.identity);
+  public async getSuspendedUserTasksForClientIdentity(): Promise<Array<DataModels.UserTasks.UserTask>> {
+    const result = await this.consumerApiService.getWaitingUserTasksByIdentity(this.identity);
+    return result.userTasks;
   }
 
   public async finishUserTask(
@@ -178,27 +192,32 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   }
 
   // ManualTasks
-  public async getSuspendedManualTasksForProcessModel(processModelId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    return this.consumerApiService.getManualTasksForProcessModel(this.identity, processModelId);
+  public async getSuspendedManualTasksForProcessModel(processModelId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
+    const result = await this.consumerApiService.getManualTasksForProcessModel(this.identity, processModelId);
+    return result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    return this.consumerApiService.getManualTasksForProcessInstance(this.identity, processInstanceId);
+  public async getSuspendedManualTasksForProcessInstance(processInstanceId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
+    const result = await this.consumerApiService.getManualTasksForProcessInstance(this.identity, processInstanceId);
+    return result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForCorrelation(correlationId: string): Promise<DataModels.ManualTasks.ManualTaskList> {
-    return this.consumerApiService.getManualTasksForCorrelation(this.identity, correlationId);
+  public async getSuspendedManualTasksForCorrelation(correlationId: string): Promise<Array<DataModels.ManualTasks.ManualTask>> {
+    const result = await this.consumerApiService.getManualTasksForCorrelation(this.identity, correlationId);
+    return result.manualTasks;
   }
 
   public async getSuspendedManualTasksForProcessModelInCorrelation(
     processModelId: string,
     correlationId: string,
-  ): Promise<DataModels.ManualTasks.ManualTaskList> {
-    return this.consumerApiService.getManualTasksForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+  ): Promise<Array<DataModels.ManualTasks.ManualTask>> {
+    const result = await this.consumerApiService.getManualTasksForProcessModelInCorrelation(this.identity, processModelId, correlationId);
+    return result.manualTasks;
   }
 
-  public async getSuspendedManualTasksForClientIdentity(): Promise<DataModels.ManualTasks.ManualTaskList> {
-    return this.consumerApiService.getWaitingManualTasksByIdentity(this.identity);
+  public async getSuspendedManualTasksForClientIdentity(): Promise<Array<DataModels.ManualTasks.ManualTask>> {
+    const result = await this.consumerApiService.getWaitingManualTasksByIdentity(this.identity);
+    return result.manualTasks;
   }
 
   public async finishManualTask(

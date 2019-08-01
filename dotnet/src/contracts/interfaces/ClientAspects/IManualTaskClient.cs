@@ -1,0 +1,59 @@
+namespace ProcessEngine.Client.Contracts.ClientAspects
+{
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using ProcessEngine.ConsumerAPI.Contracts.DataModel;
+
+    /// <summary>
+    /// The IManualTaskClient is used to retreive and manage ManualTasks.
+    /// </summary>
+    public interface IManualTaskClient
+    {
+        /// <summary>
+        /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel.
+        /// </summary>
+        /// <returns>The fetched ManualTasks.</returns>
+        /// <param name="processModelId">The ID of the ProcessDefinition for
+        /// which to retrieve the ManualTasks.</param>
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModel(string processModelId);
+
+        /// <summary>
+        /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel within a Correlation.
+        /// </summary>
+        /// <returns>The fetched ManualTasks.</returns>
+        /// <param name="processInstanceId">The ID of the ProcessInstance for
+        /// which to retrieve the ManualTasks.</param>
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessInstance(string processInstanceId);
+
+        /// <summary>
+        /// Retrieves a list of all suspended ManualTasks belonging to a specific Correlation.
+        /// </summary>
+        /// <returns>The fetched ManualTasks.</returns>
+        /// <param name="correlationId">The ID of the Correlation for which to
+        /// retrieve the ManualTasks.</param>
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForCorrelation(string correlationId);
+
+        /// <summary>
+        /// Retrieves a list of all suspended ManualTasks belonging to an instance of a specific ProcessModel within a Correlation.
+        /// </summary>
+        /// <returns>The fetched ManualTasks.</returns>
+        /// <param name="processModelId">The ID of the ProcessDefinition for
+        /// which to retrieve the ManualTasks.</param>
+        /// <param name="correlationId">The ID of the Correlation for which to retrieve the ManualTasks.</param>
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForProcessModelInCorrelation(string processModelId, string correlationId);
+
+        /// <summary>
+        /// Gets all waiting ManualTasks belonging to the identity associated with the client.
+        /// </summary>
+        /// <returns>The fetched ManualTasks.</returns>
+        Task<IEnumerable<ManualTask>> GetSuspendedManualTasksForClientIdentity();
+
+        /// <summary>
+        /// Finishes a ManualTask belonging to an instance of a specific ProcessModel within a correlation.
+        /// </summary>
+        /// <param name="processInstanceId">The ID of the ProcessInstance that the ManualTask belongs to.</param>
+        /// <param name="correlationId">The ID of the Correlation that the ManualTask belongs to.</param>
+        /// <param name="manualTaskInstanceId">The instance ID of the ManualTask to finish.</param>
+        Task FinishManualTask(string processInstanceId, string correlationId, string manualTaskInstanceId);
+    }
+}

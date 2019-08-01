@@ -3,11 +3,11 @@ import {DataModels} from '@process-engine/consumer_api_contracts';
 export interface IEventClient {
 
   // Events
-  getSuspendedEventsForProcessModel(processModelId: string): Promise<DataModels.Events.EventList>;
+  getSuspendedEventsForProcessModel(processModelId: string): Promise<Array<DataModels.Events.Event>>;
 
-  getSuspendedEventsForCorrelation(correlationId: string): Promise<DataModels.Events.EventList>;
+  getSuspendedEventsForCorrelation(correlationId: string): Promise<Array<DataModels.Events.Event>>;
 
-  getSuspendedEventsForProcessModelInCorrelation(processModelId: string, correlationId: string): Promise<DataModels.Events.EventList>;
+  getSuspendedEventsForProcessModelInCorrelation(processModelId: string, correlationId: string): Promise<Array<DataModels.Events.Event>>;
 
   triggerMessageEvent(messageName: string, payload?: DataModels.Events.EventTriggerPayload): Promise<void>;
 
