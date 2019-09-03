@@ -26,7 +26,7 @@ pipeline {
   }
 
   stages {
-    stage('prepare') {
+    stage('Prepare') {
       steps {
         dir('typescript') {
 
@@ -47,7 +47,7 @@ pipeline {
         }
       }
     }
-    stage('lint') {
+    stage('Lint') {
       steps {
         dir('typescript') {
           sh('node --version')
@@ -55,7 +55,7 @@ pipeline {
         }
       }
     }
-    stage('build') {
+    stage('Build') {
       steps {
         dir('typescript') {
           sh('node --version')
@@ -63,7 +63,7 @@ pipeline {
         }
       }
     }
-    stage('test') {
+    stage('Test') {
       steps {
         dir('typescript') {
           sh('node --version')
@@ -71,7 +71,7 @@ pipeline {
         }
       }
     }
-    stage('publish') {
+    stage('Publish') {
       steps {
         dir('typescript') {
           script {
@@ -130,7 +130,7 @@ pipeline {
         }
       }
     }
-    stage('cleanup') {
+    stage('Cleanup') {
       steps {
         script {
           // this stage just exists, so the cleanup-work that happens in the post-script
