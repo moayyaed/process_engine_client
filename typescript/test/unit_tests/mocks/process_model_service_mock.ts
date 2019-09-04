@@ -1,7 +1,7 @@
 import {IIdentity} from '@essential-projects/iam_contracts';
 import {DataModels} from '@process-engine/consumer_api_contracts';
 
-export class ConsumerApiServiceMock {
+export class ProcessModelServiceMock {
 
   private fixturesToUse: any;
 

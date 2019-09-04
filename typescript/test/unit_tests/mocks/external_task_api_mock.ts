@@ -1,11 +1,11 @@
 import {IIdentity} from '@essential-projects/iam_contracts';
 
 import {
-  ExternalTask,
-  IExternalTaskApi,
-} from '@process-engine/external_task_api_contracts';
+  APIs,
+  DataModels,
+} from '@process-engine/consumer_api_contracts';
 
-export class ExternalTaskApiMock implements IExternalTaskApi {
+export class ExternalTaskApiMock implements APIs.IExternalTaskConsumerApi {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public config: any;
@@ -19,7 +19,7 @@ export class ExternalTaskApiMock implements IExternalTaskApi {
     maxTasks: number,
     longPollingTimeout: number,
     lockDuration: number,
-  ): Promise<Array<ExternalTask<TPayloadType>>> {
+  ): Promise<Array<DataModels.ExternalTask.ExternalTask<TPayloadType>>> {
     return Promise.resolve([]);
   }
 

@@ -4,9 +4,9 @@ import * as should from 'should';
 import {ProcessEngineInternalClient} from '../../../dist/commonjs/process_engine_internal_client';
 import {ProcessStartResponse} from '../../../dist/commonjs/contracts/types/process_start_response';
 
-import {ConsumerApiServiceMock} from '../mocks/consumer_api_service_mock';
+import {ProcessModelServiceMock} from '../mocks/process_model_service_mock';
 
-describe('ProessEngineHttpClient.startProcessInstance', (): void => {
+describe('ProessEngineInternalClient.startProcessInstance', (): void => {
 
   describe('Payload transformation', (): void => {
 
@@ -21,12 +21,12 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
         tokenPayload: {sample: 'payload'},
       };
 
-      const consumerApiServiceMock = new ConsumerApiServiceMock(fixtures);
+      const processModelServiceMock = new ProcessModelServiceMock(fixtures);
 
-      consumerApiServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
+      processModelServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
         payloadSentToProcessEngine = payload;
       };
-      const processEngineInternalClient = new ProcessEngineInternalClient(consumerApiServiceMock);
+      const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock);
 
       const samplePayload = {
         correlationId: '',
@@ -59,13 +59,13 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
 
     let receivedIdentity;
 
-    const consumerApiServiceMock = new ConsumerApiServiceMock();
+    const processModelServiceMock = new ProcessModelServiceMock();
 
-    consumerApiServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
+    processModelServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
       receivedIdentity = identity;
     };
 
-    const processEngineInternalClient = new ProcessEngineInternalClient(consumerApiServiceMock);
+    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock);
 
     it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
@@ -84,9 +84,9 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
 
     let receivedIdentity;
 
-    const consumerApiServiceMock = new ConsumerApiServiceMock();
+    const processModelServiceMock = new ProcessModelServiceMock();
 
-    consumerApiServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
+    processModelServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
       receivedIdentity = identity;
     };
 
@@ -95,7 +95,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
       userId: 'someUser',
     };
 
-    const processEngineInternalClient = new ProcessEngineInternalClient(consumerApiServiceMock, {}, samplIdentity);
+    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock, {}, samplIdentity);
 
     it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
