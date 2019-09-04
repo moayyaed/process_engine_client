@@ -25,8 +25,7 @@
     "@essential-projects/http": "^2.4.0",
     "@essential-projects/http_contracts": "^2.4.0",
     "@essential-projects/iam_contracts": "^3.5.0",
-    "@process-engine/consumer_api_contracts": "^7.0.0",
-    "@process-engine/external_task_api_contracts": "^1.1.0",
+    "@process-engine/consumer_api_contracts": "^8.0.0",
     "loggerhythm": "^3.0.3",
     "node-uuid": "^1.4.8",
     "socket.io-client": "^2.2.0"

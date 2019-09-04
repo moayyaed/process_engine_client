@@ -3,9 +3,9 @@ import * as uuid from 'node-uuid';
 
 import {IIdentity} from '@essential-projects/iam_contracts';
 import {
-  ExternalTask,
-  IExternalTaskApi,
-} from '@process-engine/external_task_api_contracts';
+  APIs,
+  DataModels,
+} from '@process-engine/consumer_api_contracts';
 
 import {Interfaces, Types} from '../contracts/index';
 
@@ -16,12 +16,12 @@ export class ExternalTaskWorker implements Interfaces.IExternalTaskWorker {
   // eslint-disable-next-line @typescript-eslint/member-naming
   private readonly _workerId = uuid.v4();
   private readonly lockDuration = 30000;
-  private readonly externalTaskApi: IExternalTaskApi = undefined;
+  private readonly externalTaskApi: APIs.IExternalTaskConsumerApi = undefined;
 
   private pollingIsActive: boolean = false;
   private pollingInterval = 1000;
 
-  constructor(externalTaskApi: IExternalTaskApi) {
+  constructor(externalTaskApi: APIs.IExternalTaskConsumerApi) {
     this.externalTaskApi = externalTaskApi;
   }
 
@@ -75,7 +75,7 @@ export class ExternalTaskWorker implements Interfaces.IExternalTaskWorker {
     topic: string,
     maxTasks: number,
     longpollingTimeout: number,
-  ): Promise<Array<ExternalTask<TPayload>>> {
+  ): Promise<Array<DataModels.ExternalTask.ExternalTask<TPayload>>> {
 
     try {
       return await this
@@ -97,7 +97,7 @@ export class ExternalTaskWorker implements Interfaces.IExternalTaskWorker {
 
   private async executeExternalTask<TPayload, TResult>(
     identity: IIdentity,
-    externalTask: ExternalTask<TPayload>,
+    externalTask: DataModels.ExternalTask.ExternalTask<TPayload>,
     handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
   ): Promise<void> {
 
@@ -120,7 +120,7 @@ export class ExternalTaskWorker implements Interfaces.IExternalTaskWorker {
     }
   }
 
-  private async extendLocks<TPayload>(identity: IIdentity, externalTask: ExternalTask<TPayload>): Promise<void> {
+  private async extendLocks<TPayload>(identity: IIdentity, externalTask: DataModels.ExternalTask.ExternalTask<TPayload>): Promise<void> {
     try {
       await this.externalTaskApi.extendLock(identity, this.workerId, externalTask.id, this.lockDuration);
     } catch (error) {

@@ -3,19 +3,14 @@ import {HttpClient} from '@essential-projects/http';
 import {IIdentity} from '@essential-projects/iam_contracts';
 
 import {
-  ExtendLockRequestPayload,
-  ExternalTask,
-  FetchAndLockRequestPayload,
-  FinishExternalTaskRequestPayload,
-  HandleBpmnErrorRequestPayload,
-  HandleServiceErrorRequestPayload,
-  IExternalTaskApi,
+  APIs,
+  DataModels,
   restSettings,
-} from '@process-engine/external_task_api_contracts';
+} from '@process-engine/consumer_api_contracts';
 
 import {Types} from '../contracts/index';
 
-export class ExternalTaskHttpClient implements IExternalTaskApi {
+export class ExternalTaskHttpClient implements APIs.IExternalTaskConsumerApi {
 
   public config: Types.HttpClientConfig;
 
@@ -35,15 +30,18 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
     maxTasks: number,
     longPollingTimeout: number,
     lockDuration: number,
-  ): Promise<Array<ExternalTask<TPayloadType>>> {
+  ): Promise<Array<DataModels.ExternalTask.ExternalTask<TPayloadType>>> {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
     const url = this.applyBaseUrl(restSettings.paths.fetchAndLockExternalTasks);
 
-    const payload = new FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
+    const payload = new DataModels.ExternalTask.FetchAndLockRequestPayload(workerId, topicName, maxTasks, longPollingTimeout, lockDuration);
 
-    const httpResponse = await this.httpClient.post<FetchAndLockRequestPayload, Array<ExternalTask<TPayloadType>>>(url, payload, requestAuthHeaders);
+    const httpResponse = await this
+      .httpClient
+      // eslint-disable-next-line
+      .post<DataModels.ExternalTask.FetchAndLockRequestPayload, Array<DataModels.ExternalTask.ExternalTask<TPayloadType>>>(url, payload, requestAuthHeaders);
 
     return httpResponse.result;
   }
@@ -52,28 +50,28 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.extendLock
+    const restPath = restSettings.paths.extendExternalTaskLock
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
     const url = this.applyBaseUrl(restPath);
 
-    const payload = new ExtendLockRequestPayload(workerId, additionalDuration);
+    const payload = new DataModels.ExternalTask.ExtendLockRequestPayload(workerId, additionalDuration);
 
-    await this.httpClient.post<ExtendLockRequestPayload, void>(url, payload, requestAuthHeaders);
+    await this.httpClient.post<DataModels.ExternalTask.ExtendLockRequestPayload, void>(url, payload, requestAuthHeaders);
   }
 
   public async handleBpmnError(identity: IIdentity, workerId: string, externalTaskId: string, errorCode: string): Promise<void> {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.handleBpmnError
+    const restPath = restSettings.paths.finishExternalTaskWithBpmnError
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
     const url = this.applyBaseUrl(restPath);
 
-    const payload = new HandleBpmnErrorRequestPayload(workerId, errorCode);
+    const payload = new DataModels.ExternalTask.HandleBpmnErrorRequestPayload(workerId, errorCode);
 
-    await this.httpClient.post<HandleBpmnErrorRequestPayload, void>(url, payload, requestAuthHeaders);
+    await this.httpClient.post<DataModels.ExternalTask.HandleBpmnErrorRequestPayload, void>(url, payload, requestAuthHeaders);
   }
 
   public async handleServiceError(
@@ -86,14 +84,14 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const requestAuthHeaders = this.createRequestAuthHeaders(identity);
 
-    const restPath = restSettings.paths.handleServiceError
+    const restPath = restSettings.paths.finishExternalTaskWithServiceError
       .replace(restSettings.params.externalTaskId, externalTaskId);
 
     const url = this.applyBaseUrl(restPath);
 
-    const payload = new HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
+    const payload = new DataModels.ExternalTask.HandleServiceErrorRequestPayload(workerId, errorMessage, errorDetails);
 
-    await this.httpClient.post<HandleServiceErrorRequestPayload, void>(url, payload, requestAuthHeaders);
+    await this.httpClient.post<DataModels.ExternalTask.HandleServiceErrorRequestPayload, void>(url, payload, requestAuthHeaders);
   }
 
   public async finishExternalTask<TResultType>(identity: IIdentity, workerId: string, externalTaskId: string, results: TResultType): Promise<void> {
@@ -105,9 +103,9 @@ export class ExternalTaskHttpClient implements IExternalTaskApi {
 
     const url = this.applyBaseUrl(restPath);
 
-    const payload = new FinishExternalTaskRequestPayload(workerId, results);
+    const payload = new DataModels.ExternalTask.FinishExternalTaskRequestPayload(workerId, results);
 
-    await this.httpClient.post<FinishExternalTaskRequestPayload<TResultType>, void>(url, payload, requestAuthHeaders);
+    await this.httpClient.post<DataModels.ExternalTask.FinishExternalTaskRequestPayload<TResultType>, void>(url, payload, requestAuthHeaders);
   }
 
   private createRequestAuthHeaders(identity: IIdentity): IRequestOptions {

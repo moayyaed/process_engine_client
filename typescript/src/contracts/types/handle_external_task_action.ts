@@ -1,3 +1,4 @@
-import {ExternalTask} from '@process-engine/external_task_api_contracts';
+import {DataModels} from '@process-engine/consumer_api_contracts';
 
-export type HandleExternalTaskAction<TPayload, TResult> = (payload: TPayload, externalTask?: ExternalTask<TPayload>) => Promise<TResult>;
+export type HandleExternalTaskAction<TPayload, TResult> =
+  (payload: TPayload, externalTask?: DataModels.ExternalTask.ExternalTask<TPayload>) => Promise<TResult>;
