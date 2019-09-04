@@ -13,8 +13,6 @@ def cleanup_workspace() {
   }
 }
 
-def npm_install_command = 'npm install --ignore-scripts'
-
 pipeline {
   agent any
   tools {
@@ -29,16 +27,9 @@ pipeline {
     stage('Prepare') {
       steps {
         dir('typescript') {
-
-          script {
-            def run_clean_install = env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'develop';
-            if (run_clean_install) {
-              npm_install_command = 'npm ci --ignore-scripts'
-            }
-          }
           nodejs(configId: env.NPM_RC_FILE, nodeJSInstallationName: env.NODE_JS_VERSION) {
             sh('node --version')
-            sh(npm_install_command)
+            sh('npm install --ignore-scripts')
 
             // does prepare the version, but not commit it
             sh('node ./node_modules/.bin/ci_tools prepare-version --allow-dirty-workdir')
