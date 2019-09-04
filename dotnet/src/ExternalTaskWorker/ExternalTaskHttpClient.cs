@@ -6,13 +6,14 @@
 
     using EssentialProjects.IAM.Contracts;
 
-    using ProcessEngine.ExternalTaskAPI.Contracts;
+    using ProcessEngine.ConsumerAPI.Contracts.APIs;
+    using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
     /// <summary>
     /// This Client is used exclusively by the ExternalTaskWorker.
     /// It accesses the ProcessEngine's HTTP endpoints for managing ExternalTasks.
     /// </summary>
-    public class ExternalTaskHttpClient : IExternalTaskAPI
+    public class ExternalTaskHttpClient : IExternalTaskConsumerApi
     {
         private HttpFacade HttpFacade { get; }
 

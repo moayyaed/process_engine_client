@@ -8,7 +8,7 @@ namespace ProcessEngine.Client
 
     using EssentialProjects.IAM.Contracts;
     using ProcessEngine.Client.Contracts;
-    using ProcessEngine.ExternalTaskAPI.Contracts;
+    using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
     /// <summary>
     /// Periodically fetches, locks and processes ExternalTasks for a given topic.
@@ -113,14 +113,16 @@ namespace ProcessEngine.Client
             {
                 try
                 {
-                    return await this.ExternalTaskHttpClient.FetchAndLockExternalTasks<TPayload>(
-                    identity,
-                    WorkerId,
-                    topic,
-                    maxTasks,
-                    longpollingTimeout,
-                    LockDurationInMilliseconds
+                    var externalTasks = await this.ExternalTaskHttpClient.FetchAndLockExternalTasks<TPayload>(
+                        identity,
+                        WorkerId,
+                        topic,
+                        maxTasks,
+                        longpollingTimeout,
+                        LockDurationInMilliseconds
                     );
+
+                    return (IEnumerable<ExternalTask<TPayload>>) externalTasks;
                 }
                 catch (Exception exception)
                 {

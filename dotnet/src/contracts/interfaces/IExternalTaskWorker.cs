@@ -2,14 +2,15 @@ namespace ProcessEngine.Client.Contracts
 {
     using System.Threading.Tasks;
 
-    using ProcessEngine.ExternalTaskAPI.Contracts;
+    using ProcessEngine.ConsumerAPI.Contracts;
+    using ProcessEngine.ConsumerAPI.Contracts.DataModel;
 
     using EssentialProjects.IAM.Contracts;
 
     /// <summary>
     /// Definition of the HandleExternalTask Callback.
     /// </summary>
-    public delegate Task<IExternalTaskResult> ExtendedHandleExternalTaskAction<TPayload, TResult>(TPayload payload, ExternalTask<TPayload> externalTask);
+    public delegate Task<ExternalTaskResultBase> ExtendedHandleExternalTaskAction<TPayload, TResult>(TPayload payload, ExternalTask<TPayload> externalTask);
 
     /// <summary>
     /// Periodically fetches, locks and processes ExternalTasks for a given topic.
