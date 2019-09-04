@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/process_engine_client",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "The Client for accessing the ProcessEngine",
   "main": "dist/commonjs/index.js",
   "typings": "dist/index.d.ts",
