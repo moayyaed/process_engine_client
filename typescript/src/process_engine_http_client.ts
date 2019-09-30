@@ -10,12 +10,13 @@ import {IIdentity} from '@essential-projects/iam_contracts';
 import {
   restSettings as ConsumerRestSettings,
   DataModels,
+  HandleExternalTaskAction,
   Messages,
   socketSettings,
 } from '@process-engine/consumer_api_contracts';
+import {ExternalTaskWorker} from '@process-engine/consumer_api_client';
 
 import {Interfaces, Types} from './contracts/index';
-import {ExternalTaskHttpClient, ExternalTaskWorker} from './external_task_worker/index';
 
 /**
  * Connects a Subscription ID to a specific callback.
@@ -140,7 +141,7 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   public async getResultForProcessModelInCorrelation(
     correlationId: string,
     processModelId: string,
-  ): Promise<Array<DataModels.CorrelationResult>> {
+  ): Promise<DataModels.Correlations.CorrelationResultList> {
 
     const restPath = ConsumerRestSettings.paths.getProcessResultForCorrelation
       .replace(ConsumerRestSettings.params.correlationId, correlationId)
@@ -150,17 +151,17 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
 
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
-    const httpResponse = await this.httpClient.get<Array<DataModels.CorrelationResult>>(url, requestAuthHeaders);
+    const httpResponse = await this.httpClient.get<DataModels.Correlations.CorrelationResultList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
 
-  public async getProcessInstancesForClientIdentity(): Promise<Array<DataModels.ProcessInstance>> {
+  public async getProcessInstancesForClientIdentity(): Promise<DataModels.ProcessModels.ProcessInstanceList> {
     const requestAuthHeaders = this.createRequestAuthHeaders(this.identity);
 
     const url = this.applyBaseConsumerApiUrl(ConsumerRestSettings.paths.getOwnProcessInstances);
 
-    const httpResponse = await this.httpClient.get<Array<DataModels.ProcessInstance>>(url, requestAuthHeaders);
+    const httpResponse = await this.httpClient.get<DataModels.ProcessModels.ProcessInstanceList>(url, requestAuthHeaders);
 
     return httpResponse.result;
   }
@@ -489,20 +490,13 @@ export class ProcessEngineHttpClient implements Interfaces.IProcessEngineClient,
   // ExternalTasks
   public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
+    callback: HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): Interfaces.IExternalTaskWorker {
+  ): ExternalTaskWorker<TPayload, TResult> {
+    const externalTaskWorker = new ExternalTaskWorker<TPayload, TResult>(this.processEngineUrl, this.identity, topic, maxTasks, timeout, callback);
 
-    const externalTaskHttpClient = new ExternalTaskHttpClient();
-    externalTaskHttpClient.config = {
-      url: this.processEngineUrl,
-    };
-    externalTaskHttpClient.initialize();
-
-    const externalTaskWorker = new ExternalTaskWorker(externalTaskHttpClient);
-
-    externalTaskWorker.subscribeToExternalTasksWithTopic<TPayload, TResult>(this.identity, topic, maxTasks, timeout, handleAction);
+    externalTaskWorker.start();
 
     return externalTaskWorker;
   }

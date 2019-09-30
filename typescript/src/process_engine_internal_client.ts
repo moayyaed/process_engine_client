@@ -4,17 +4,17 @@ import {IIdentity} from '@essential-projects/iam_contracts';
 import {
   APIs,
   DataModels,
+  HandleExternalTaskAction,
   Messages,
 } from '@process-engine/consumer_api_contracts';
+import {ExternalTaskWorker} from '@process-engine/consumer_api_client';
 
 import {Interfaces, Types} from './contracts/index';
-import {ExternalTaskWorker} from './external_task_worker/index';
 
 export class ProcessEngineInternalClient implements Interfaces.IProcessEngineClient {
 
   private emptyActivityService: APIs.IEmptyActivityConsumerApi;
   private eventService: APIs.IEventConsumerApi;
-  private externalTaskService: APIs.IExternalTaskConsumerApi;
   private manualTaskService: APIs.IManualTaskConsumerApi;
   private notificationService: APIs.INotificationConsumerApi;
   private processModelService: APIs.IProcessModelConsumerApi;
@@ -29,7 +29,6 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   constructor(
     emptyActivityService: APIs.IEmptyActivityConsumerApi,
     eventService: APIs.IEventConsumerApi,
-    externalTaskService: APIs.IExternalTaskConsumerApi,
     manualTaskService: APIs.IManualTaskConsumerApi,
     notificationService: APIs.INotificationConsumerApi,
     processModelService: APIs.IProcessModelConsumerApi,
@@ -38,7 +37,6 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   ) {
     this.emptyActivityService = emptyActivityService;
     this.eventService = eventService;
-    this.externalTaskService = externalTaskService;
     this.manualTaskService = manualTaskService;
     this.notificationService = notificationService;
     this.processModelService = processModelService;
@@ -99,11 +97,11 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   public async getResultForProcessModelInCorrelation(
     correlationId: string,
     processModelId: string,
-  ): Promise<Array<DataModels.CorrelationResult>> {
+  ): Promise<DataModels.Correlations.CorrelationResultList> {
     return this.processModelService.getProcessResultForCorrelation(this.identity, correlationId, processModelId);
   }
 
-  public async getProcessInstancesForClientIdentity(): Promise<Array<DataModels.ProcessInstance>> {
+  public async getProcessInstancesForClientIdentity(): Promise<DataModels.ProcessModels.ProcessInstanceList> {
     return this.processModelService.getProcessInstancesByIdentity(this.identity);
   }
 
@@ -249,13 +247,14 @@ export class ProcessEngineInternalClient implements Interfaces.IProcessEngineCli
   // ExternalTasks
   public subscribeToExternalTasksWithTopic<TPayload, TResult>(
     topic: string,
-    handleAction: Types.HandleExternalTaskAction<TPayload, TResult>,
+    callback: HandleExternalTaskAction<TPayload, TResult>,
     maxTasks: number = 10,
     timeout: number = 1000,
-  ): Interfaces.IExternalTaskWorker {
-    const externalTaskWorker = new ExternalTaskWorker(this.externalTaskService);
+    processEngineUrl: string = 'http://localhost:8000',
+  ): ExternalTaskWorker<TPayload, TResult> {
+    const externalTaskWorker = new ExternalTaskWorker<TPayload, TResult>(processEngineUrl, this.identity, topic, maxTasks, timeout, callback);
 
-    externalTaskWorker.subscribeToExternalTasksWithTopic<TPayload, TResult>(this.identity, topic, maxTasks, timeout, handleAction);
+    externalTaskWorker.start();
 
     return externalTaskWorker;
   }
