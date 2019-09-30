@@ -12,6 +12,8 @@ namespace ProcessEngine.Client
     using ConsumerApiRestSettings = ProcessEngine.ConsumerAPI.Contracts.RestSettings;
 
     using ProcessEngine.Client.Contracts;
+    using ProcessEngine.ConsumerAPI.Contracts;
+    using ProcessEngine.ConsumerAPI.Client;
 
     public class ProcessEngineClient: IProcessEngineClient
     {
@@ -77,11 +79,11 @@ namespace ProcessEngine.Client
             return parsedResult;
         }
 
-        public async Task<IEnumerable<ProcessInstance>> GetProcessInstancesForClientIdentity()
+        public async Task<ProcessInstanceList> GetProcessInstancesForClientIdentity()
         {
             var endpoint = ConsumerApiRestSettings.Paths.GetOwnProcessInstances;
 
-            var result = await this.HttpFacade.SendRequestAndExpectResult<IEnumerable<ProcessInstance>>(HttpMethod.Get, endpoint);
+            var result = await this.HttpFacade.SendRequestAndExpectResult<ProcessInstanceList>(HttpMethod.Get, endpoint);
 
             return result;
         }
@@ -135,7 +137,7 @@ namespace ProcessEngine.Client
             return parsedResponse;
         }
 
-        public async Task<IEnumerable<CorrelationResult<TPayload>>> GetResultForProcessModelInCorrelation<TPayload>(
+        public async Task<CorrelationResultList<TPayload>> GetResultForProcessModelInCorrelation<TPayload>(
             string correlationId,
             string processModelId)
         where TPayload : new()
@@ -144,7 +146,7 @@ namespace ProcessEngine.Client
                 .Replace(ConsumerApiRestSettings.Params.CorrelationId, correlationId)
                 .Replace(ConsumerApiRestSettings.Params.ProcessModelId, processModelId);
 
-            var result = await this.HttpFacade.SendRequestAndExpectResult<IEnumerable<CorrelationResult<TPayload>>>(HttpMethod.Get, endpoint);
+            var result = await this.HttpFacade.SendRequestAndExpectResult<CorrelationResultList<TPayload>>(HttpMethod.Get, endpoint);
 
             return result;
         }
@@ -410,9 +412,9 @@ namespace ProcessEngine.Client
 
 #region "ExternalTasks"
 
-        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload, TResult>(
+        public ExternalTaskWorker<TPayload, TResult> SubscribeToExternalTasksWithTopic<TPayload, TResult>(
             string topic,
-            ExtendedHandleExternalTaskAction<TPayload, TResult> handleAction
+            HandleExternalTaskAction<TPayload, TResult> handleAction
         )
         where TPayload : new()
         where TResult : new()
@@ -423,20 +425,18 @@ namespace ProcessEngine.Client
             return this.SubscribeToExternalTasksWithTopic<TPayload, TResult>(topic, maxTasks, timeout, handleAction);
         }
 
-        public ExternalTaskWorker SubscribeToExternalTasksWithTopic<TPayload, TResult>(
+        public ExternalTaskWorker<TPayload, TResult> SubscribeToExternalTasksWithTopic<TPayload, TResult>(
             string topic,
             int maxTasks,
             int timeout,
-            ExtendedHandleExternalTaskAction<TPayload, TResult> handleAction
+            HandleExternalTaskAction<TPayload, TResult> handleAction
         )
         where TPayload : new()
         where TResult : new()
         {
-            var externalTaskHttpClient = new ExternalTaskHttpClient(this.processEngineUrl);
-            var externalTaskWorker = new ExternalTaskWorker(externalTaskHttpClient);
+            var externalTaskWorker = new ExternalTaskWorker<TPayload, TResult>(this.processEngineUrl, this.Identity, topic, maxTasks, timeout, handleAction);
 
-            // We must not await this, because this method runs in an infinite loop that never gets resolved until the "stop" command is given.
-            externalTaskWorker.SubscribeToExternalTasksWithTopic<TPayload, TResult>(this.Identity, topic, maxTasks, timeout, handleAction);
+            externalTaskWorker.Start();
 
             return externalTaskWorker;
         }
