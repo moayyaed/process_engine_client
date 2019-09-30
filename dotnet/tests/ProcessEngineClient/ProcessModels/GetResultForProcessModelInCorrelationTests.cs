@@ -48,7 +48,7 @@ namespace ProcessEngine.Client.Tests
                 EndEventId = endEventId
             };
 
-            var actualCorrelationResult = new List<CorrelationResult<TestResult>>(correlationResults).FirstOrDefault();
+            var actualCorrelationResult = new List<CorrelationResult<TestResult>>(correlationResults.CorrelationResults).FirstOrDefault();
 
             Assert.NotNull(actualCorrelationResult);
 

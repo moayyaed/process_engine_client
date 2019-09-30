@@ -35,7 +35,7 @@ namespace ProcessEngine.Client.Tests
                 .ProcessEngineClient
                 .GetProcessInstancesForClientIdentity();
 
-            Assert.NotNull(processInstances);
+            Assert.NotNull(processInstances.ProcessInstances);
         }
     }
 }

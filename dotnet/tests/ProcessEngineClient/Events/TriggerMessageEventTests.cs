@@ -42,7 +42,7 @@ namespace ProcessEngine.Client.Tests
                 .ProcessEngineClient
                 .GetResultForProcessModelInCorrelation<object>(processStartResponsePayload.CorrelationId, processModelId);
 
-            Assert.NotEmpty(processResult);
+            Assert.NotEmpty(processResult.CorrelationResults);
         }
 
     }
