@@ -34,7 +34,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// Gets a list of all ProcessInstances started by the Identity associated with the client.
         /// </summary>
         /// <returns>The List of ProcessInstances</returns>
-        Task<IEnumerable<ProcessInstance>> GetProcessInstancesForClientIdentity();
+        Task<ProcessInstanceList> GetProcessInstancesForClientIdentity();
 
         /// <summary>
         /// Starts an instance for a given ProcessDefinition. Process variables and correlation id may be supplied in the request payload.
@@ -62,7 +62,7 @@ namespace ProcessEngine.Client.Contracts.ClientAspects
         /// <param name="correlationId">The ID of the Correlation for which to get the results.</param>
         /// <param name="processModelId">The ID of the ProcessDefinition for which to get the results.</param>
         /// <typeparam name="TPayload">The type that holds the definition for the Correlation result's payload.</typeparam>
-        Task<IEnumerable<CorrelationResult<TPayload>>> GetResultForProcessModelInCorrelation<TPayload>(
+        Task<CorrelationResultList<TPayload>> GetResultForProcessModelInCorrelation<TPayload>(
             string correlationId,
             string processModelId
         )
