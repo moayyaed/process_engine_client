@@ -13,8 +13,13 @@ def cleanup_workspace() {
   }
 }
 
+def buildIsRequired = true
+
 pipeline {
   agent any
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20'))
+  }
   tools {
     nodejs "node-lts"
   }
@@ -24,7 +29,31 @@ pipeline {
   }
 
   stages {
+    stage('Check if build is required') {
+      steps {
+        script {
+          // Taken from https://stackoverflow.com/questions/37755586/how-do-you-pull-git-committer-information-for-jenkins-pipeline
+          sh 'git --no-pager show -s --format=\'%an\' > commit-author.txt'
+          def commitAuthorName = readFile('commit-author.txt').trim()
+
+          def ciAdminName = "admin" // jenkins will set this name after every restart, so we need to look out for this.
+          def ciUserName = "process-engine-ci"
+
+          echo(commitAuthorName)
+          echo("Commiter is process-engine-ci: ${commitAuthorName == ciUserName || commitAuthorName == ciAdminName}")
+
+          buildIsRequired = commitAuthorName != ciAdminName && commitAuthorName != ciUserName
+
+          if (!buildIsRequired) {
+            echo("Commit was made by process-engine-ci. Skipping build.")
+          }
+        }
+      }
+    }
     stage('Install dependencies') {
+      when {
+        expression {buildIsRequired == true}
+      }
       steps {
         dir('typescript') {
           nodejs(configId: env.NPM_RC_FILE, nodeJSInstallationName: env.NODE_JS_VERSION) {
@@ -35,6 +64,9 @@ pipeline {
       }
     }
     stage('Build Sources') {
+      when {
+        expression {buildIsRequired == true}
+      }
       steps {
         dir('typescript') {
           sh('node --version')
@@ -43,6 +75,9 @@ pipeline {
       }
     }
     stage('Test') {
+      when {
+        expression {buildIsRequired == true}
+      }
       parallel {
         stage('Lint sources') {
           steps {
@@ -63,14 +98,26 @@ pipeline {
       }
     }
     stage('Set package version') {
+      when {
+        expression {buildIsRequired == true}
+      }
       steps {
         dir('typescript') {
           sh('node --version')
           sh('node ./node_modules/.bin/ci_tools prepare-version --allow-dirty-workdir');
+
+          withCredentials([
+            usernamePassword(credentialsId: 'process-engine-ci_github-token', passwordVariable: 'GH_TOKEN', usernameVariable: 'GH_USER')
+          ]) {
+            sh('node ./node_modules/.bin/ci_tools commit-and-tag-version --only-on-primary-branches')
+          }
         }
       }
     }
     stage('Publish') {
+      when {
+        expression {buildIsRequired == true}
+      }
       parallel {
         stage('npm') {
           steps {
@@ -94,7 +141,6 @@ pipeline {
               withCredentials([
                 usernamePassword(credentialsId: 'process-engine-ci_github-token', passwordVariable: 'GH_TOKEN', usernameVariable: 'GH_USER')
               ]) {
-                sh('node ./node_modules/.bin/ci_tools commit-and-tag-version --only-on-primary-branches')
                 sh('node ./node_modules/.bin/ci_tools update-github-release --only-on-primary-branches --use-title-and-text-from-git-tag');
               }
             }
@@ -103,6 +149,9 @@ pipeline {
       }
     }
     stage('Cleanup') {
+      when {
+        expression {buildIsRequired == true}
+      }
       steps {
         script {
           // this stage just exists, so the cleanup-work that happens in the post-script
