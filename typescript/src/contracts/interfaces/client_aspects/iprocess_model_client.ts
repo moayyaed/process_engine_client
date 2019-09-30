@@ -18,8 +18,8 @@ export interface IProcessModelClient {
     endEventId?: string,
   ): Promise<ProcessStartResponse<TResponsePayload>>;
 
-  getResultForProcessModelInCorrelation(correlationId: string, processModelId: string): Promise<Array<DataModels.CorrelationResult>>;
+  getResultForProcessModelInCorrelation(correlationId: string, processModelId: string): Promise<DataModels.Correlations.CorrelationResultList>;
 
-  getProcessInstancesForClientIdentity(): Promise<Array<DataModels.ProcessInstance>>;
+  getProcessInstancesForClientIdentity(): Promise<DataModels.ProcessModels.ProcessInstanceList>;
 
 }
