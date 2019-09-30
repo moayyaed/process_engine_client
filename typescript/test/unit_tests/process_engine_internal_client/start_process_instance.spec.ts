@@ -26,7 +26,7 @@ describe('ProessEngineInternalClient.startProcessInstance', (): void => {
       processModelServiceMock.onCalledCallback = (identity, processModelId, payload): void => {
         payloadSentToProcessEngine = payload;
       };
-      const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock);
+      const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, processModelServiceMock);
 
       const samplePayload = {
         correlationId: '',
@@ -65,7 +65,7 @@ describe('ProessEngineInternalClient.startProcessInstance', (): void => {
       receivedIdentity = identity;
     };
 
-    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock);
+    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, processModelServiceMock);
 
     it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
@@ -90,18 +90,18 @@ describe('ProessEngineInternalClient.startProcessInstance', (): void => {
       receivedIdentity = identity;
     };
 
-    const samplIdentity = {
+    const sampleIdentity = {
       token: 'abcdefg',
       userId: 'someUser',
     };
 
-    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, {}, processModelServiceMock, {}, samplIdentity);
+    const processEngineInternalClient = new ProcessEngineInternalClient({}, {}, {}, {}, processModelServiceMock, {}, sampleIdentity);
 
     it('Should pass the correct identity to the ProcessEngine.', async (): Promise<void> => {
 
       await processEngineInternalClient.startProcessInstance('processModelId', 'startEventId');
 
-      should(receivedIdentity).be.eql(samplIdentity);
+      should(receivedIdentity).be.eql(sampleIdentity);
     });
   });
 });

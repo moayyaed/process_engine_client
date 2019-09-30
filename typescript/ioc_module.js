@@ -13,7 +13,6 @@ function registerInContainer(container) {
     .dependencies(
       'ConsumerApiEmptyActivityService',
       'ConsumerApiEventService',
-      'ConsumerApiExternalTaskService',
       'ConsumerApiManualTaskService',
       'ConsumerApiNotificationService',
       'ConsumerApiProcessModelService',
