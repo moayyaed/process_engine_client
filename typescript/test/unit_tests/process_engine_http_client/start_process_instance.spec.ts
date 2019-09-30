@@ -93,7 +93,7 @@ describe('ProessEngineHttpClient.startProcessInstance', (): void => {
     const samplIdentity = {
       token: 'abcdefg',
       userId: 'someUser',
-    }
+    };
 
     const processEngineHttpClient = new ProcessEngineHttpClient(sampleUrl, samplIdentity);
     processEngineHttpClient.httpClient = httpClientMock as any;
