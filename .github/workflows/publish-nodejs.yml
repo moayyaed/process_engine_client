@@ -8,10 +8,9 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     if: "!(contains(github.actor, 'process-engine-ci') || contains(github.actor, 'admin'))"
-    
+
     steps:
     - uses: actions/checkout@v1
 
@@ -30,6 +29,10 @@ jobs:
 
     - name: 'Build sources'
       run: npm run build
+      working-directory: ./typescript
+
+    - name: 'Lint Soures'
+      run: npm run lint
       working-directory: ./typescript
 
     - name: 'Run tests'
