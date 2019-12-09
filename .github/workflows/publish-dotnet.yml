@@ -54,7 +54,7 @@ jobs:
       working-directory: ./dotnet
       run: dotnet build --configuration Release src
 
-    - name: 'Check Whether Package is Published'
+    - name: 'Check if package version already exists'
       working-directory: ./dotnet
       id: package_published
       env:
@@ -84,5 +84,3 @@ jobs:
       run: dotnet nuget push src/bin/Release/ProcessEngine.Client.*.nupkg --api-key $MYGET_TOKEN --source https://5minds.myget.org/F/process_engine_public/api/v2
       env:
         MYGET_TOKEN: ${{ secrets.MYGET_TOKEN }}
-
-
